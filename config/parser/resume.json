@@ -1,0 +1,88 @@
+{
+    "name": "Name of the candidate",
+    "email": "Email of the candidate",
+    "dob": "Parse the DOB in YYYY-MM-DD format",
+    "phone": "Candidate's Phone Number",
+    "gender": {
+        "type": "enum",
+        "options": ["Male","Female","None"],
+        "description": "Identify the candidate gender"
+    },
+    "address": {
+        "nationality": "Identify the nationality",
+        "state": "State/Province",
+        "city": "City",
+        "postal_code": "Postal Code"
+    },
+    "experiences": {
+        "type": "array",
+        "items": {
+            "title": "Job Title",
+            "company": "Company Name",
+            "location": "Company Location",
+            "start_date": "Start date in YYYY-MM-DD format",
+            "end_date": "End date in YYYY-MM-DD format, null of it's still working"
+        }
+    },
+    "experiences": [
+        {
+            "title": "Job Title",
+            "company": "Company Name",
+            "location": "Company Location",
+            "start_date": "Start date in YYYY-MM-DD format",
+            "end_date": "End date in YYYY-MM-DD format, null of it's still working"
+        },
+        "Parse the description of this experiences"
+    ],
+    "linkedin": "LinkedIn Profile URL",
+    "links": {
+        "description": "Parse any other links if available",
+        "type": [
+            {
+                "type": ["Github","portfolio","website"],
+                "url": "Given URL"
+            }
+        ]
+    },
+    "languages": [
+        {
+            "name": "Language Name",
+            "proficiency": ["Beginner","Intermediate","Advanced","Fluent","Native"]
+        }
+    ],
+    "Skills": [
+        {
+            "name": "Skill Name",
+            "level": {
+                "type": "int",
+                "description": "Define the skill level between 0 to 10"
+            },
+            "used": {
+                "type": "int",
+                "description": "Skill used duration in month"
+            }
+        }
+    ],
+    "certifications": [
+        {
+            "name": "Certification Name",
+            "issuer": "Issuing Organization",
+            "issue_date": "YYYY-MM-DD",
+            "expiration_date": "YYYY-MM-DD (null if does not expire)"
+        }
+    ],
+    "projects": {
+        "description": "Parse any projects if candidate has provided",
+        "type": [
+            {
+                "name": "Name of the project",
+                "description": "Short description of the project",
+                "technologies": ["Tech1","Tech2"],
+                "role": "Role in the project",
+                "start_date": "YYYY-MM-DD",
+                "end_date": "YYYY-MM-DD (null if ongoing)",
+                "url": "Project URL (if available)"
+            }
+        ]
+    }
+}
