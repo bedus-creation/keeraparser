@@ -1,5 +1,4 @@
 import { Button } from '@/components/ui/button';
-import { PropertyItemArray } from '@/pages/parsers/property-item-array';
 import { SchemaProperty } from '@/pages/parsers/type';
 import { router } from '@inertiajs/react';
 import { ChevronDown, ChevronRight, Plus, Trash2 } from 'lucide-react';
@@ -9,11 +8,13 @@ export function PropertyItem({
     expandedProps,
     toggleExpand,
     property,
+    path
 }: {
-    openAddPropertyDialog: any;
-    expandedProps: any;
+    openAddPropertyDialog: (schema_id: number)=> void;
+    expandedProps: Record<string, boolean>;
     toggleExpand: (path: string) => void;
     property: SchemaProperty;
+    path: string[]
 }) {
     const fullPath = [...path, property.name].join('.');
     const isExpanded = expandedProps[fullPath] || false;
@@ -60,7 +61,7 @@ export function PropertyItem({
                         size="sm"
                         onClick={(e) => {
                             e.stopPropagation();
-                            removeProperty([...path, property.name]);
+                            removeProperty();
                         }}
                     >
                         <Trash2 className="h-4 w-4 text-red-500" />
@@ -78,7 +79,7 @@ export function PropertyItem({
                                     expandedProps={expandedProps}
                                     toggleExpand={toggleExpand}
                                     property={prop}
-                                    path={[]}
+                                    path={[...path, property.name]}
                                 />
                             ))}
                             {Object.keys(property.properties).length === 0 && <p className="text-muted-foreground text-sm italic">No properties</p>}
@@ -110,7 +111,14 @@ export function PropertyItem({
                                         {Object.keys(property.items.properties).length > 0 ? (
                                             <div className="pl-2">
                                                 {Object.values(property.items.properties).map((itemProp) => (
-                                                    <PropertyItemArray key={itemProp.id} property={itemProp} />
+                                                    <PropertyItem
+                                                        key={itemProp.id}
+                                                        openAddPropertyDialog={openAddPropertyDialog}
+                                                        expandedProps={expandedProps}
+                                                        toggleExpand={toggleExpand}
+                                                        property={itemProp}
+                                                        path={[...path, itemProp.name]}
+                                                    />
                                                 ))}
                                             </div>
                                         ) : (

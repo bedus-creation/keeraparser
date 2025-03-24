@@ -26,6 +26,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::delete('schemas/{id}', function ($id) {
         \App\Models\Schema::query()
+            ->where('schema_id', $id)
+            ->delete();
+
+        \App\Models\Schema::query()
             ->where('id', $id)
             ->delete();
 

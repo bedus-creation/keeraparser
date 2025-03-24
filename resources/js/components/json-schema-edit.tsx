@@ -10,14 +10,15 @@ import { PropertyAddModal } from '@/pages/parsers/property-add-modal';
 import { PropertyItem } from '@/pages/parsers/property-item';
 import { JsonSchema, SchemaProperty } from '@/pages/parsers/type';
 import { Plus, Save } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 export function JsonSchemaEditor({ initialSchema }: { initialSchema: JsonSchema }) {
     const [schema, setSchema] = useState<JsonSchema>(initialSchema);
+    useEffect(() => {
+        setSchema(initialSchema); // Update the state whenever the initialSchema prop changes
+    }, [initialSchema]);
+
     const [expandedProps, setExpandedProps] = useState<Record<string, boolean>>({});
-    const [newPropertyDialogOpen, setNewPropertyDialogOpen] = useState(false);
-    const [currentPath, setCurrentPath] = useState<string[]>([]);
-    const [isArrayItemProperty, setIsArrayItemProperty] = useState(false);
 
     const [currentPropertyState, setCurrentPropertyState] = useState<Record<string, any>>({
         open: false,
@@ -43,16 +44,6 @@ export function JsonSchemaEditor({ initialSchema }: { initialSchema: JsonSchema 
             schema_id: schema_id,
             open: true,
         });
-        // setData({
-        //     name: '',
-        //     type: 'string',
-        //     description: '',
-        //     schema_id: schema_id,
-        //     required: false,
-        // });
-        // setCurrentPath(path);
-        setIsArrayItemProperty(false);
-        setNewPropertyDialogOpen(true);
     };
 
     const renderSchemaToJson = (): string => {
@@ -73,9 +64,8 @@ export function JsonSchemaEditor({ initialSchema }: { initialSchema: JsonSchema 
     };
 
     const convertPropertyToJsonSchema = (prop: SchemaProperty): any => {
-        const result: any = {
+        const result: any= {
             type: prop.type,
-            id: prop.id,
         };
 
         if (prop.description) {
@@ -131,16 +121,6 @@ export function JsonSchemaEditor({ initialSchema }: { initialSchema: JsonSchema 
         return result;
     };
 
-    const renderProperty = (property: SchemaProperty, path: string[] = []) => {
-        return <PropertyItem
-            key={property.id}
-            openAddPropertyDialog={openAddPropertyDialog}
-            expandedProps={expandedProps}
-            toggleExpand={toggleExpand}
-            property={property}
-            path={path} />;
-    };
-
     if (!schema) {
         return null;
     }
@@ -190,9 +170,10 @@ export function JsonSchemaEditor({ initialSchema }: { initialSchema: JsonSchema 
                                         openAddPropertyDialog={openAddPropertyDialog}
                                         expandedProps={expandedProps}
                                         toggleExpand={toggleExpand}
-                                        property={property} />
-                                    )
-                                )}
+                                        property={property}
+                                        path={[]}
+                                    />
+                                ))}
                                 {Object.keys(schema.properties).length === 0 && (
                                     <p className="text-muted-foreground py-4 text-center">No properties defined. Add a property to get started.</p>
                                 )}

@@ -6,21 +6,16 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { PropertyType } from '@/pages/parsers/type';
-import { InertiaFormProps, router, useForm } from '@inertiajs/react';
+import { router, useForm } from '@inertiajs/react';
 import { Trash2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 
 export function PropertyAddModal({ open, schema_id, onClose }: { open: boolean; schema_id: number; onClose: (open: boolean) => void }) {
     const [isArrayItemProperty, setIsArrayItemProperty] = useState(false);
     const currentPath = '';
 
-    const {
-        data,
-        setData,
-        post,
-        processing,
-        errors
-    }: InertiaFormProps<{
+    const { data, setData, post, reset } = useForm<{
         schema_id: number;
         name: string;
         type: string;
@@ -28,34 +23,39 @@ export function PropertyAddModal({ open, schema_id, onClose }: { open: boolean; 
         required: boolean;
         items?: {
             type: PropertyType;
-        }
-        enum?: string[];
-    }> = useForm({
+        } | null;
+        enum?: string[] | null;
+    }>({
         schema_id: schema_id,
         name: '',
         type: 'string',
         description: '',
         required: false,
         items: null,
-        enum: null
+        enum: null,
     });
 
     useEffect(() => {
         setData((previousData) => ({
             ...previousData,
-            schema_id
+            schema_id,
         }));
     }, [schema_id, setData]);
 
-    const addProperty = (event) => {
+    const addProperty = (event: React.MouseEvent<HTMLButtonElement>) => {
         event.preventDefault();
 
         post('/schemas', {
+            preserveScroll: true,
             onSuccess: () => {
                 router.reload();
-
                 onClose(false);
-            }
+                toast.success('Property Added Successfully');
+                reset()
+            },
+            onError: (error) => {
+                toast.success(error.message);
+            },
         });
     };
 
@@ -68,7 +68,7 @@ export function PropertyAddModal({ open, schema_id, onClose }: { open: boolean; 
 
             return {
                 ...prev,
-                enum: [...currentEnum, value]
+                enum: [...currentEnum, value],
             };
         });
     };
@@ -79,7 +79,7 @@ export function PropertyAddModal({ open, schema_id, onClose }: { open: boolean; 
 
             return {
                 ...prev,
-                enum: prev.enum.filter((v) => v !== value)
+                enum: prev.enum.filter((v) => v !== value),
             };
         });
     };
@@ -95,8 +95,8 @@ export function PropertyAddModal({ open, schema_id, onClose }: { open: boolean; 
                         {isArrayItemProperty
                             ? `Adding property to items in ${currentPath.join('.')}`
                             : currentPath.length > 0
-                                ? `Adding property to ${currentPath.join('.')}`
-                                : 'Adding property to root object'}
+                              ? `Adding property to ${currentPath.join('.')}`
+                              : 'Adding property to root object'}
                     </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
@@ -157,19 +157,11 @@ export function PropertyAddModal({ open, schema_id, onClose }: { open: boolean; 
                     )}
 
                     {data.type === 'enum' && data.enum?.length && data.enum?.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-2">
+                        <div className="mt-2 flex flex-wrap gap-1">
                             {data.enum?.map((value) => (
-                                <div
-                                    key={value}
-                                    className="flex items-center gap-1 bg-blue-50 text-blue-800 px-2 py-1 rounded text-xs">
+                                <div key={value} className="flex items-center gap-1 rounded bg-blue-50 px-2 py-1 text-xs text-blue-800">
                                     {value}
-                                    <Button
-                                        type="button"
-                                        variant="ghost"
-                                        size="sm"
-                                        className="h-4 w-4 p-0"
-                                        onClick={() => removeEnumValue(value)}
-                                    >
+                                    <Button type="button" variant="ghost" size="sm" className="h-4 w-4 p-0" onClick={() => removeEnumValue(value)}>
                                         <Trash2 className="h-3 w-3" />
                                     </Button>
                                 </div>
@@ -206,7 +198,7 @@ export function PropertyAddModal({ open, schema_id, onClose }: { open: boolean; 
                                         items: {
                                             ...data.items,
                                             type: value,
-                                        }
+                                        },
                                     })
                                 }
                             >
