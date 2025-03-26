@@ -75,8 +75,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ]);
     })->name('parsers.edit');
 
-    Route::get('parsers', function () {
+    Route::get('parsers', function (Request $request) {
         $parsers = \App\Models\Parser::query()
+            ->where('name', 'LIKE', '%' . $request->input('q') . '%')
             ->paginate(10)
             ->toArray();
 
@@ -85,7 +86,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         $results['pagination'] = $parsers;
 
         return Inertia::render('parsers/index', [
-            'parsers' => $results
+            'parsers' => $results,
+            'params'  => $request->all()
         ]);
     });
 });

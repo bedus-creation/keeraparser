@@ -1,7 +1,11 @@
+import { Pagination } from '@/types';
+
 export interface Parser {
     id: number;
     name: string;
     user_id: number;
+    type: string;
+    system_prompt: string;
 }
 
 export interface SchemaProperty {
@@ -26,3 +30,5 @@ export interface JsonSchema {
     required: string[];
     enum: string[];
 }
+
+export type ParserPaginate = { data: Parser[]; pagination: Pagination };

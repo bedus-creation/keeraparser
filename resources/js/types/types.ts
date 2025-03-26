@@ -8,3 +8,5 @@ export interface Auth {
 export interface Pagination {
     page: number;
 }
+
+export type Params = Record<string, never>

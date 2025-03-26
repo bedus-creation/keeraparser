@@ -4,9 +4,9 @@
 * Landing Page
 * Payment module integrations
 * Pricing Page
+* Rate limiting
 * Parsers
 * Parse the json schema
-* Rate limiting
 
 # Marketing
 * Product Hunt

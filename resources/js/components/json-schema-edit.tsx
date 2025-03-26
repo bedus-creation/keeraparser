@@ -185,9 +185,6 @@ export function JsonSchemaEditor({ initialSchema }: { initialSchema: JsonSchema 
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between">
                             <CardTitle>JSON Schema</CardTitle>
-                            <Button variant="outline">
-                                <Save className="mr-2 h-4 w-4" /> Download
-                            </Button>
                         </CardHeader>
                         <CardContent>
                             <pre className="bg-muted max-h-[500px] overflow-auto rounded-md p-4">
