@@ -1,9 +1,9 @@
 import { Playground } from '@/components/playground';
 import AppLayout from '@/layouts/app-layout';
-import { TempMedia } from '@/pages/chat/types';
+import { Chat as ChatType, ParserList } from '@/pages/chat/types';
 import { Head } from '@inertiajs/react';
 
-export default function Chat({ tempMedia }: { tempMedia: TempMedia }) {
+export default function Chat({ parsers, chat }: { chat?: ChatType, parsers: ParserList[] }) {
     return (
         <AppLayout>
             <Head title="Keera document Parser" />
@@ -16,7 +16,7 @@ export default function Chat({ tempMedia }: { tempMedia: TempMedia }) {
                             Upload a resume, parse it, and customize the JSON structure to fit your needs
                         </p>
                     </div>
-                    <Playground tempMedia={tempMedia} />
+                    <Playground parsers={parsers} chat={chat}/>
                 </div>
             </main>
         </AppLayout>

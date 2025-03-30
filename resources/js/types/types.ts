@@ -1,3 +1,7 @@
+export interface BaseFile extends File{
+    path: string;
+}
+
 export interface Auth {
     user: {
         id: number;
