@@ -1,6 +1,10 @@
 <?php
 
+use App\Http\Requests\ChatRequest;
+use App\Jobs\ChatProcessJob;
 use App\Models\Chat;
+use App\Models\Parser;
+use App\Queries\ParserQuery;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -15,24 +19,28 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('dashboard');
 
     Route::get('chats', function () {
-        return Inertia::render('chat/index', [
+        $parsers = ParserQuery::getParserList();
 
+        return Inertia::render('chat/index', [
+            'parsers' => $parsers,
         ]);
     })->name('dashboard');
 
-    Route::get('chats/{id}', function () {
-        $chat = Chat::query()->findOrFail(1);
+    Route::get('chats/{id}', function (int $id) {
+        $parsers = ParserQuery::getParserList();
+        $chat    = Chat::query()->findOrFail($id);
 
         return Inertia::render('chat/index', [
-            'chat' => $chat,
+            'chat'    => $chat,
+            'parsers' => $parsers,
         ]);
     })->name('chats.show');
 
-    Route::post('chats', function (Request $request) {
-        $chat = \App\Models\Chat::query()->create([
+    Route::post('chats', function (ChatRequest $request) {
+        $chat = Chat::query()->create([
             'user_id'     => auth()->id(),
             'parser_type' => 'resume',
-            'parser_id'   => 1,
+            'parser_id'   => $request->integer('parser_id'),
         ]);
 
         $files = $request->file('files') ?? [];
@@ -40,6 +48,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         foreach ($files as $file) {
             $chat->addMedia($file)->toMediaCollection();
         }
+
+        ChatProcessJob::dispatch($chat->id);
 
         return redirect()->to(route('chats.show', $chat->id));
     });
@@ -64,7 +74,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     Route::get('parsers/{id}/forks', function ($id) {
-        $parser = \App\Models\Parser::query()
+        $parser = Parser::query()
             ->where('id', $id)
             ->firstOrFail();
 
@@ -75,6 +85,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         $schemaReplicate = $schema->replicate();
         $schemaReplicate->save();
 
+        /** @var Parser $replicateParser */
         $replicateParser             = $parser->replicate();
         $replicateParser->created_at = now();
         $replicateParser->user_id    = auth()->id();
@@ -85,7 +96,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     Route::get('parsers/{id}/edit', function ($id) {
-        $parser = \App\Models\Parser::query()
+        $parser = Parser::query()
             ->with('schema')
             ->where('id', $id)
             ->firstOrFail();
@@ -103,7 +114,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('parsers.edit');
 
     Route::get('parsers', function (Request $request) {
-        $parsers = \App\Models\Parser::query()
+        $parsers = Parser::query()
             ->where('name', 'LIKE', '%'.$request->input('q').'%')
             ->paginate(10)
             ->toArray();

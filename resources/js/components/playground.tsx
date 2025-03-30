@@ -1,47 +1,52 @@
 'use client';
 
+import { Error } from '@/components/error';
 import { FileUploader } from '@/components/file-uploader';
 import { ResultsViewer } from '@/components/results-viewer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { defaultParserConfig } from '@/lib/default-parser-config';
-import { TempMedia } from '@/pages/chat/types';
+import { Chat, ParserList } from '@/pages/chat/types';
+import { BaseFile } from '@/types/types';
 import { useForm } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 import { useRoute } from 'ziggy-js';
 
-export function Playground({ tempMedia }: { tempMedia: TempMedia }) {
-    const { data, setData, processing, post } = useForm<{
-        files: File[];
+export function Playground({ parsers, chat }: { chat: Chat, parsers: ParserList[] }) {
+    const { data, setData, processing, post, errors } = useForm<{
+        parser_id: number | null;
+        files: BaseFile[];
     }>({
+        parser_id: null,
         files: [],
     });
 
     const route = useRoute();
 
-    const [file, setFile] = useState<File | null>(null);
-    const [parserConfig, setParserConfig] = useState(defaultParserConfig);
     const [results, setResults] = useState<any>(null);
-    const [isProcessing, setIsProcessing] = useState(false);
     const [activeTab, setActiveTab] = useState('upload');
 
     useEffect(() => {
         setActiveTab(route().current() === 'chats.show' ? 'results' : 'upload');
     }, [route]);
 
-    const handleFileUpload = (uploadedFile: File) => {
+    const handleFileUpload = (uploadedFile: BaseFile) => {
         setData((files) => ({
+            ...files,
             files: [...files.files, uploadedFile],
         }));
     };
 
-    const handleParseResume = async () => {
-        post('chats');
+    const removeFile = (file: BaseFile) => {
+        setData(
+            'files',
+            data.files.filter((item) => item.path != file.path),
+        );
     };
 
-    const handleForkParser = (newConfig: any) => {
-        setParserConfig(newConfig);
+    const handleParseResume = async () => {
+        post('chats');
     };
 
     return (
@@ -49,7 +54,7 @@ export function Playground({ tempMedia }: { tempMedia: TempMedia }) {
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                 <TabsList className="grid w-full grid-cols-2">
                     <TabsTrigger value="upload">Upload Resume</TabsTrigger>
-                    <TabsTrigger value="results" disabled={!results}>
+                    <TabsTrigger value="results" disabled={!chat?.response}>
                         Results
                     </TabsTrigger>
                 </TabsList>
@@ -57,16 +62,39 @@ export function Playground({ tempMedia }: { tempMedia: TempMedia }) {
                 {/* Upload Tab */}
                 <TabsContent value="upload" className="mt-4">
                     <Card>
-                        <CardHeader>
-                            <CardTitle>Upload Resume</CardTitle>
-                            <CardDescription>Upload a resume file to parse. Supported formats: PDF, DOCX, TXT</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <FileUploader onFileUpload={handleFileUpload} files={data.files} />
+                        <CardContent className="grid grid-cols-1 gap-y-8">
+                            <div>
+                                <label htmlFor="email" className="mb-2 block text-sm/6 font-medium text-gray-900">
+                                    Choose your Parser
+                                </label>
+                                <Select onValueChange={(event)=>setData('parser_id', parseInt(event))} >
+                                    <SelectTrigger className="w-1/2">
+                                        <SelectValue placeholder="Select a parser" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectGroup>
+                                            {parsers.map((parser) => (
+                                                <SelectItem key={parser.id} value={parser.id}>
+                                                    {parser.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectGroup>
+                                    </SelectContent>
+                                </Select>
+                                <Error message={errors.parser_id} />
+                            </div>
+
+                            <div>
+                                <label htmlFor="files" className="mb-2 block text-sm/6 font-medium text-gray-900">
+                                    Upload Resume/CV
+                                </label>
+                                <FileUploader onFileUpload={handleFileUpload} files={data.files} onFileRemove={removeFile} />
+                                <Error message={errors.files} />
+                            </div>
                         </CardContent>
                         <CardFooter className="flex justify-end">
                             <Button onClick={handleParseResume} disabled={processing}>
-                                {isProcessing ? 'Processing...' : 'Parse Resume'}
+                                {processing ? 'Processing...' : 'Parse Resume'}
                             </Button>
                         </CardFooter>
                     </Card>
@@ -80,7 +108,7 @@ export function Playground({ tempMedia }: { tempMedia: TempMedia }) {
                             <CardDescription>The structured data extracted from your resume</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <ResultsViewer results={results} />
+                            <ResultsViewer results={chat?.response} />
                         </CardContent>
                         <CardFooter className="flex justify-between">
                             <Button variant="outline" onClick={() => setActiveTab('upload')}>
@@ -89,7 +117,7 @@ export function Playground({ tempMedia }: { tempMedia: TempMedia }) {
                             <div className="flex gap-2">
                                 <Button
                                     onClick={() => {
-                                        const dataStr = JSON.stringify(results, null, 2);
+                                        const dataStr = JSON.stringify(chat.response, null, 2);
                                         const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
                                         const downloadAnchorNode = document.createElement('a');
                                         downloadAnchorNode.setAttribute('href', dataUri);

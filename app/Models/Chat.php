@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Constants\ChatStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Spatie\MediaLibrary\HasMedia;
@@ -23,6 +24,16 @@ class Chat extends Model implements HasMedia
         'response',
         'user_id',
     ];
+
+    public function casts(): array
+    {
+        return [
+            'status'                => ChatStatus::class,
+            'payload'               => 'array',
+            'response_completed_at' => 'datetime',
+            'response'              => 'array',
+        ];
+    }
 
     public function parser(): BelongsTo
     {
