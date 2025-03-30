@@ -1,12 +1,14 @@
-import { Playground } from "@/components/playground"
-import AppLayout from "@/layouts/app-layout"
-import { Head } from "@inertiajs/react"
-export default function Chat(){
+import { Playground } from '@/components/playground';
+import AppLayout from '@/layouts/app-layout';
+import { TempMedia } from '@/pages/chat/types';
+import { Head } from '@inertiajs/react';
+
+export default function Chat({ tempMedia }: { tempMedia: TempMedia }) {
     return (
         <AppLayout>
-            <Head title="Keera document Parser"/>
+            <Head title="Keera document Parser" />
 
-            <main className="container mx-auto py-6 px-4 md:px-6">
+            <main className="container mx-auto px-4 py-6 md:px-6">
                 <div className="flex flex-col gap-6">
                     <div className="space-y-2 text-center">
                         <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">Resume Parser Playground</h1>
@@ -14,9 +16,9 @@ export default function Chat(){
                             Upload a resume, parse it, and customize the JSON structure to fit your needs
                         </p>
                     </div>
-                    <Playground/>
+                    <Playground tempMedia={tempMedia} />
                 </div>
             </main>
         </AppLayout>
-    )
+    );
 }

@@ -31,4 +31,9 @@ class Schema extends Model
     {
         return (new JsonParser())->toJson($this);
     }
+
+    public function toJsonSchema()
+    {
+        return (new JsonParser())->toJsonSchema($this);
+    }
 }

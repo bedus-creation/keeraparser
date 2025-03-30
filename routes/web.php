@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Chat;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -14,8 +15,34 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('dashboard');
 
     Route::get('chats', function () {
-        return Inertia::render('chat/index');
+        return Inertia::render('chat/index', [
+
+        ]);
     })->name('dashboard');
+
+    Route::get('chats/{id}', function () {
+        $chat = Chat::query()->findOrFail(1);
+
+        return Inertia::render('chat/index', [
+            'chat' => $chat,
+        ]);
+    })->name('chats.show');
+
+    Route::post('chats', function (Request $request) {
+        $chat = \App\Models\Chat::query()->create([
+            'user_id'     => auth()->id(),
+            'parser_type' => 'resume',
+            'parser_id'   => 1,
+        ]);
+
+        $files = $request->file('files') ?? [];
+
+        foreach ($files as $file) {
+            $chat->addMedia($file)->toMediaCollection();
+        }
+
+        return redirect()->to(route('chats.show', $chat->id));
+    });
 
     Route::post('schemas', function (Request $request) {
         \App\Models\Schema::query()
@@ -77,7 +104,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('parsers', function (Request $request) {
         $parsers = \App\Models\Parser::query()
-            ->where('name', 'LIKE', '%' . $request->input('q') . '%')
+            ->where('name', 'LIKE', '%'.$request->input('q').'%')
             ->paginate(10)
             ->toArray();
 
