@@ -8,7 +8,7 @@ class ParserQuery
 {
     public static function getParserList(): array
     {
-        return \App\Data\ParserListData::collect(
+        return \App\Data\ParserInfoData::collect(
             items: Parser::query()
                 ->select('id', 'name')
                 ->where('type', 'resume')

@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function () {
-    return Inertia::render('welcome');
+    return Inertia::render('index');
 })->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -53,6 +53,22 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         return redirect()->to(route('chats.show', $chat->id));
     });
+
+    Route::get('histories', function () {
+        $chats             = \App\Data\ChatData::collect(
+            Chat::query()
+                ->with('parser')
+                ->orderBy('id', 'desc')->paginate()
+        );
+        $histories['data'] = $chats->items();
+        unset($chats['data']);
+        $histories['meta'] = $chats->toArray();
+
+        return Inertia::render('histories/index', [
+            'histories' => $histories,
+            'params'    => request()->all(),
+        ]);
+    })->name('histories.index');
 
     Route::post('schemas', function (Request $request) {
         \App\Models\Schema::query()
