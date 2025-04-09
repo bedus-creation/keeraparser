@@ -10,7 +10,11 @@ export interface Auth {
 }
 
 export interface Pagination {
-    page: number;
+    prev_page_url: string;
+    next_page_url: string;
+    current_page: number;
+    total: number;
+    per_page: number;
 }
 
 export type Params = Record<string, never>

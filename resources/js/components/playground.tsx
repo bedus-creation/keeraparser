@@ -13,7 +13,7 @@ import { useForm } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 import { useRoute } from 'ziggy-js';
 
-export function Playground({ parsers, chat }: { chat: Chat, parsers: ParserList[] }) {
+export function Playground({ parsers, chat }: { chat?: Chat, parsers: ParserList[] }) {
     const { data, setData, processing, post, errors } = useForm<{
         parser_id: number | null;
         files: BaseFile[];
@@ -23,8 +23,6 @@ export function Playground({ parsers, chat }: { chat: Chat, parsers: ParserList[
     });
 
     const route = useRoute();
-
-    const [results, setResults] = useState<any>(null);
     const [activeTab, setActiveTab] = useState('upload');
 
     useEffect(() => {
@@ -117,7 +115,7 @@ export function Playground({ parsers, chat }: { chat: Chat, parsers: ParserList[
                             <div className="flex gap-2">
                                 <Button
                                     onClick={() => {
-                                        const dataStr = JSON.stringify(chat.response, null, 2);
+                                        const dataStr = JSON.stringify(chat?.response, null, 2);
                                         const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
                                         const downloadAnchorNode = document.createElement('a');
                                         downloadAnchorNode.setAttribute('href', dataUri);
