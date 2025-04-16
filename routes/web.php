@@ -1,17 +1,65 @@
 <?php
 
+use App\Filters\ParserFilter;
 use App\Http\Requests\ChatRequest;
 use App\Jobs\ChatProcessJob;
 use App\Models\Chat;
 use App\Models\Parser;
 use App\Queries\ParserQuery;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use Laravel\Cashier\Cashier;
+use Spatie\QueryBuilder\AllowedFilter;
+use Spatie\QueryBuilder\QueryBuilder;
 
 Route::get('/', function () {
     return Inertia::render('index');
-})->name('home');
+})->name('landing.index');
+
+Route::middleware(['auth', 'verified'])->get('billing/stripe/success', function (Request $request) {
+    $sessionId = $request->get('session_id');
+
+    if ($sessionId === null) {
+        return;
+    }
+
+    $session = Cashier::stripe()->checkout->sessions->retrieve($sessionId);
+
+    if ($session->payment_status !== 'paid') {
+        return;
+    }
+
+    // TODO: send an invoice
+    // User may refresh this page, invoice should be sent once
+
+    $plan = $session['metadata']['plan'] ?? null;
+
+    return inertia('payments/success', [
+        'payment' => [
+            'created_at'   => Carbon::parse($session->created)->format('Y-m-d'),
+            'plan'         => $plan,
+            'total_amount' => \Illuminate\Support\Number::currency($session->amount_total/100)
+        ],
+    ]);
+})->name('billing.stripe.success');
+
+Route::middleware(['auth', 'verified'])->get('billing', function (Request $request) {
+    $plan = $request->input('plan');
+
+    $planPrice = config('pricing.'.strtolower($plan));
+
+    return request()->user()
+        ->newSubscription($plan, $planPrice['stripe_product_price'])
+        ->checkout([
+            'success_url' => route('billing.stripe.success')."?session_id={CHECKOUT_SESSION_ID}",
+            'cancel_url'  => route('billing.stripe.success'),
+            'metadata'    => [
+                'plan' => $plan,
+            ]
+        ], []);
+})->name('billing');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function () {
@@ -130,9 +178,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('parsers.edit');
 
     Route::get('parsers', function (Request $request) {
-        $parsers = Parser::query()
-            ->where('name', 'LIKE', '%'.$request->input('q').'%')
-            ->paginate(10)
+        $parsers = QueryBuilder::for(Parser::class)
+            ->allowedFilters([
+                AllowedFilter::custom('q', new ParserFilter),
+            ])->where(function (\Illuminate\Database\Eloquent\Builder $query) {
+                $query->where('user_id', auth()->id())
+                    ->orWhereNull('user_id');
+            })->paginate()
+            ->appends(request()->all())
             ->toArray();
 
         $results['data'] = $parsers['data'];

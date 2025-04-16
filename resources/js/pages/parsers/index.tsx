@@ -1,11 +1,10 @@
 import { Badge } from '@/components/ui/badge';
-import { type BreadcrumbItem } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import AppLayout from '@/layouts/app-layout';
 import { ParserPaginate } from '@/pages/parsers/type';
-import { Auth } from '@/types';
+import { Auth, type BreadcrumbItem } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
 import debounce from 'debounce';
 import { Edit, GitFork, Search } from 'lucide-react';
@@ -13,10 +12,18 @@ import { useEffect, useMemo } from 'react';
 
 export default function Parsers({ params, parsers, auth }: { params: { search: string }; parsers: ParserPaginate; auth: Auth }) {
     const { data, setData, get } = useForm<{
-        q: string;
+        filter: {
+            q: string;
+        };
     }>({
-        q: '',
+        filter: {
+            q: '',
+        },
     });
+
+    const setFilter = (key: string, value: any) => {
+        setData({ filter: { q: value } });
+    };
 
     useEffect(() => {
         setData((currentData) => ({
@@ -38,7 +45,7 @@ export default function Parsers({ params, parsers, auth }: { params: { search: s
 
     useEffect(() => {
         search();
-    }, [data.q, search]);
+    }, [data.filter, search]);
 
     const breadcrumbs: BreadcrumbItem[] = [
         {
@@ -53,7 +60,12 @@ export default function Parsers({ params, parsers, auth }: { params: { search: s
             <main className="container mx-auto px-4 py-6 md:px-6">
                 <div className="mb-8 flex flex-col gap-4 md:flex-row">
                     <div className="relative flex-1">
-                        <Input value={data.q || ''} onChange={(e) => setData('q', e.target.value)} placeholder="Search prompts..." className="px-3" />
+                        <Input
+                            value={data.filter.q || ''}
+                            onChange={(e) => setFilter('q', e.target.value)}
+                            placeholder="Search prompts..."
+                            className="px-3"
+                        />
                     </div>
                     <Button onClick={() => search()}>
                         <Search className="text-muted-foreground h-4 w-4" />

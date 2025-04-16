@@ -1,7 +1,28 @@
 # Features development
+* API Key generation
+  * Delete API Keys
+  * List API Keys
+* API uses
+  * Show uses
+  * Charts
+  * Billing
+    * Manage payment Method
+  * Billing History
 * API documentation
 * Pricing Page
+  * Payment Successful
+    * Send confirmation email/invoice
+    * Activate subscription or grant access to premium features
+    * Update user status in the database
+  * Payment Failure
+  * Manage Payment methods
+  * Prevent multiple Payments
+    * Disable payment button during processing
+    * Server-side check before processing payment
+  * Payment Cancel
 * Rate limiting
+* User registration
+  * Email
 
 # Marketing
 * Product Hunt
