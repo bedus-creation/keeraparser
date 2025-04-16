@@ -8,10 +8,53 @@ use App\Queries\ParserQuery;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use Laravel\Cashier\Cashier;
 
 Route::get('/', function () {
     return Inertia::render('index');
-})->name('home');
+})->name('landing.index');
+
+Route::middleware(['auth', 'verified'])->get('billing/stripe/success', function () {
+    dd(\request()->all());
+})->name('billing.stripe.success');
+
+Route::middleware(['auth', 'verified'])->get('billing', function (Request $request) {
+    $plan = $request->input('plan');
+
+    $plan = config('pricing.'. strtolower($plan));
+
+    return request()->user()
+        ->newSubscription('default', $plan['stripe_product_price'])
+        ->checkout([
+            'success_url' => route('billing.stripe.success'),
+            'cancel_url'  => route('billing.stripe.success'),
+        ], []);
+})->name('billing');
+
+Route::get('/checkout/success', function (Request $request) {
+    $sessionId = $request->get('session_id');
+
+    if ($sessionId === null) {
+        return;
+    }
+
+    $session = Cashier::stripe()->checkout->sessions->retrieve($sessionId);
+
+    if ($session->payment_status !== 'paid') {
+        return;
+    }
+
+    $orderId = $session['metadata']['order_id'] ?? null;
+
+    $order = Order::findOrFail($orderId);
+
+    $order->update(['status' => 'completed']);
+
+    return view('checkout-success', ['order' => $order]);
+})->name('checkout-success');
+
+//Route::view('/checkout/success', 'checkout.success')->name('checkout-success');
+//Route::view('/checkout/cancel', 'checkout.cancel')->name('checkout-cancel');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function () {
@@ -130,8 +173,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('parsers.edit');
 
     Route::get('parsers', function (Request $request) {
-        $parsers = Parser::query()
+        $parsers =  Parser::query()
             ->where('name', 'LIKE', '%'.$request->input('q').'%')
+            ->where(function (\Illuminate\Database\Eloquent\Builder $query) {
+                $query->where('user_id', auth()->id())
+                    ->orWhereNull('user_id');
+            })
             ->paginate(10)
             ->toArray();
 

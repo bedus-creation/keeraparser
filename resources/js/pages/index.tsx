@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Link } from '@inertiajs/react';
-import { BarChart, CheckCircle, Code, FileUp, Globe, Shield } from 'lucide-react';
+import { BarChart, CheckCircle, Code, FileUp, Globe, Shield, XCircle } from 'lucide-react';
 import JapaneseResumeImage from '../../images/japanese-resume-to-json.png';
 
 export default function Index() {
@@ -29,14 +29,16 @@ export default function Index() {
                             Log in
                         </Link>
                         <Button asChild>
-                            <Link href="/register">Get Started</Link>
+                            <Link href="/register">Start Free Trial</Link>
                         </Button>
                     </div>
                 </div>
             </header>
             <main className="flex-1">
-                <section className="py-12 md:py-24 lg:py-20"
-                         style={{ background: 'linear-gradient(to left, rgb(6 156 255 / 67%), rgb(255 197 0 / 0%))' }}>
+                <section
+                    className="py-12 md:py-24 lg:py-20"
+                    style={{ background: 'linear-gradient(to left, rgb(6 156 255 / 67%), rgb(255 197 0 / 0%))' }}
+                >
                     <div className="container mx-auto px-4 md:px-6">
                         <div className="grid gap-6 lg:grid-cols-2 lg:gap-12 xl:grid-cols-2">
                             <div className="flex flex-col justify-center space-y-4">
@@ -51,7 +53,7 @@ export default function Index() {
                                 </div>
                                 <div className="flex flex-col gap-2 min-[400px]:flex-row">
                                     <Button size="lg" asChild>
-                                        <Link href="/register">Try for free</Link>
+                                        <Link href="/register">Start Free Trial</Link>
                                     </Button>
                                     {/*Undo for som*/}
                                     {/*<Button size="lg" variant="outline" asChild>*/}
@@ -61,11 +63,7 @@ export default function Index() {
                             </div>
                             <div className="flex items-center justify-center">
                                 <div className="relative h-[350px] w-full md:h-[450px] lg:h-[500px]">
-                                    <img
-                                        src={JapaneseResumeImage}
-                                        alt="Resume parsing illustration"
-                                        className="object-contain"
-                                    />
+                                    <img src={JapaneseResumeImage} alt="Resume parsing illustration" className="object-contain" />
                                 </div>
                             </div>
                         </div>
@@ -246,28 +244,36 @@ export default function Index() {
                             <Card>
                                 <CardHeader>
                                     <CardTitle>Free</CardTitle>
-                                    <CardDescription>For individuals and small teams</CardDescription>
+                                    <CardDescription>Try core features</CardDescription>
                                     <div className="mt-4 text-4xl font-bold">$0</div>
                                 </CardHeader>
                                 <CardContent>
                                     <ul className="space-y-2 text-sm">
                                         <li className="flex items-center">
                                             <CheckCircle className="text-primary mr-2 h-4 w-4" />
-                                            <span>10 resumes per month</span>
+                                            <span>50 parses</span>
                                         </li>
                                         <li className="flex items-center">
                                             <CheckCircle className="text-primary mr-2 h-4 w-4" />
-                                            <span>Basic data extraction</span>
+                                            <span>7 Days Trial</span>
                                         </li>
                                         <li className="flex items-center">
                                             <CheckCircle className="text-primary mr-2 h-4 w-4" />
-                                            <span>Email support</span>
+                                            <span>Try core features</span>
+                                        </li>
+                                        <li className="flex items-center">
+                                            <CheckCircle className="text-primary mr-2 h-4 w-4" />
+                                            <span>No Credit Card Required</span>
+                                        </li>
+                                        <li className="flex items-center">
+                                            <XCircle className="mr-2 h-4 w-4 text-red-500" />
+                                            <span>No API Call</span>
                                         </li>
                                     </ul>
                                 </CardContent>
                                 <CardFooter>
                                     <Button className="w-full" asChild>
-                                        <Link href="/signup">Get Started</Link>
+                                        <Link href="/register">Get Started</Link>
                                     </Button>
                                 </CardFooter>
                             </Card>
@@ -276,16 +282,16 @@ export default function Index() {
                                     <div className="bg-primary text-primary-foreground mb-2 inline-flex items-center rounded-full px-2.5 py-0.5 text-sm font-semibold">
                                         Popular
                                     </div>
-                                    <CardTitle>Pro</CardTitle>
-                                    <CardDescription>For growing businesses</CardDescription>
-                                    <div className="mt-4 text-4xl font-bold">$49</div>
+                                    <CardTitle>Starter</CardTitle>
+                                    <CardDescription>For small teams, startups, or individual recruiters</CardDescription>
+                                    <div className="mt-4 text-4xl font-bold">$19</div>
                                     <p className="text-muted-foreground text-sm">per month</p>
                                 </CardHeader>
                                 <CardContent>
                                     <ul className="space-y-2 text-sm">
                                         <li className="flex items-center">
                                             <CheckCircle className="text-primary mr-2 h-4 w-4" />
-                                            <span>100 resumes per month</span>
+                                            <span>500 parses/month</span>
                                         </li>
                                         <li className="flex items-center">
                                             <CheckCircle className="text-primary mr-2 h-4 w-4" />
@@ -311,21 +317,22 @@ export default function Index() {
                                 </CardContent>
                                 <CardFooter>
                                     <Button className="w-full" asChild>
-                                        <Link href="/signup">Get Started</Link>
+                                        <a href="/billing?plan=starter">Get Started</a>
                                     </Button>
                                 </CardFooter>
                             </Card>
                             <Card>
                                 <CardHeader>
                                     <CardTitle>Enterprise</CardTitle>
-                                    <CardDescription>For large organizations</CardDescription>
-                                    <div className="mt-4 text-4xl font-bold">Custom</div>
+                                    <CardDescription>For recruitment agencies, HR platforms, or job marketplaces</CardDescription>
+                                    <div className="mt-4 text-4xl font-bold">$99</div>
+                                    <p className="text-muted-foreground text-sm">per month</p>
                                 </CardHeader>
                                 <CardContent>
                                     <ul className="space-y-2 text-sm">
                                         <li className="flex items-center">
                                             <CheckCircle className="text-primary mr-2 h-4 w-4" />
-                                            <span>Unlimited resumes</span>
+                                            <span>5000 parses/month</span>
                                         </li>
                                         <li className="flex items-center">
                                             <CheckCircle className="text-primary mr-2 h-4 w-4" />
@@ -354,8 +361,8 @@ export default function Index() {
                                     </ul>
                                 </CardContent>
                                 <CardFooter>
-                                    <Button className="w-full" variant="outline" asChild>
-                                        <Link href="/contact">Contact Sales</Link>
+                                    <Button className="w-full" asChild>
+                                        <a href="/billing?plan=pro">Get Started</a>
                                     </Button>
                                 </CardFooter>
                             </Card>

@@ -1,7 +1,18 @@
 # Features development
+* API Key generation
+  * Delete API Keys
+  * List API Keys
+* API uses
+  * Show uses
+  * Charts
+  * Billing
+    * Manage payment Method
+  * Billing History
 * API documentation
 * Pricing Page
 * Rate limiting
+* User registration
+  * Email
 
 # Marketing
 * Product Hunt
