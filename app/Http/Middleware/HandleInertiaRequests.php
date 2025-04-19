@@ -42,7 +42,7 @@ class HandleInertiaRequests extends Middleware
             'auth'  => [
                 'user' => $request->user(),
                 'plan'=>[
-                    'on_trial'=> $request->user()->onTrial(),
+                    'on_trial'=> $request->user()?->onTrial(),
                 ]
             ],
             'ziggy' => fn(): array => [

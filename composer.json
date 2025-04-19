@@ -21,6 +21,7 @@
         "prism-php/prism": "^0.50.0",
         "spatie/laravel-data": "^4.14",
         "spatie/laravel-medialibrary": "^11.12",
+        "spatie/laravel-query-builder": "^6.3",
         "swaggest/json-schema": "^0.12.43",
         "tightenco/ziggy": "^2.4"
     },

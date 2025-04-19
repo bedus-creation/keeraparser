@@ -1,37 +1,24 @@
 <?php
 
+use App\Filters\ParserFilter;
 use App\Http\Requests\ChatRequest;
 use App\Jobs\ChatProcessJob;
 use App\Models\Chat;
 use App\Models\Parser;
 use App\Queries\ParserQuery;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Cashier\Cashier;
+use Spatie\QueryBuilder\AllowedFilter;
+use Spatie\QueryBuilder\QueryBuilder;
 
 Route::get('/', function () {
     return Inertia::render('index');
 })->name('landing.index');
 
-Route::middleware(['auth', 'verified'])->get('billing/stripe/success', function () {
-    dd(\request()->all());
-})->name('billing.stripe.success');
-
-Route::middleware(['auth', 'verified'])->get('billing', function (Request $request) {
-    $plan = $request->input('plan');
-
-    $plan = config('pricing.'. strtolower($plan));
-
-    return request()->user()
-        ->newSubscription('default', $plan['stripe_product_price'])
-        ->checkout([
-            'success_url' => route('billing.stripe.success'),
-            'cancel_url'  => route('billing.stripe.success'),
-        ], []);
-})->name('billing');
-
-Route::get('/checkout/success', function (Request $request) {
+Route::middleware(['auth', 'verified'])->get('billing/stripe/success', function (Request $request) {
     $sessionId = $request->get('session_id');
 
     if ($sessionId === null) {
@@ -44,17 +31,35 @@ Route::get('/checkout/success', function (Request $request) {
         return;
     }
 
-    $orderId = $session['metadata']['order_id'] ?? null;
+    // TODO: send an invoice
+    // User may refresh this page, invoice should be sent once
 
-    $order = Order::findOrFail($orderId);
+    $plan = $session['metadata']['plan'] ?? null;
 
-    $order->update(['status' => 'completed']);
+    return inertia('payments/success', [
+        'payment' => [
+            'created_at'   => Carbon::parse($session->created)->format('Y-m-d'),
+            'plan'         => $plan,
+            'total_amount' => \Illuminate\Support\Number::currency($session->amount_total/100)
+        ],
+    ]);
+})->name('billing.stripe.success');
 
-    return view('checkout-success', ['order' => $order]);
-})->name('checkout-success');
+Route::middleware(['auth', 'verified'])->get('billing', function (Request $request) {
+    $plan = $request->input('plan');
 
-//Route::view('/checkout/success', 'checkout.success')->name('checkout-success');
-//Route::view('/checkout/cancel', 'checkout.cancel')->name('checkout-cancel');
+    $planPrice = config('pricing.'.strtolower($plan));
+
+    return request()->user()
+        ->newSubscription($plan, $planPrice['stripe_product_price'])
+        ->checkout([
+            'success_url' => route('billing.stripe.success')."?session_id={CHECKOUT_SESSION_ID}",
+            'cancel_url'  => route('billing.stripe.success'),
+            'metadata'    => [
+                'plan' => $plan,
+            ]
+        ], []);
+})->name('billing');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function () {
@@ -173,13 +178,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('parsers.edit');
 
     Route::get('parsers', function (Request $request) {
-        $parsers =  Parser::query()
-            ->where('name', 'LIKE', '%'.$request->input('q').'%')
-            ->where(function (\Illuminate\Database\Eloquent\Builder $query) {
+        $parsers = QueryBuilder::for(Parser::class)
+            ->allowedFilters([
+                AllowedFilter::custom('q', new ParserFilter),
+            ])->where(function (\Illuminate\Database\Eloquent\Builder $query) {
                 $query->where('user_id', auth()->id())
                     ->orWhereNull('user_id');
-            })
-            ->paginate(10)
+            })->paginate()
+            ->appends(request()->all())
             ->toArray();
 
         $results['data'] = $parsers['data'];
