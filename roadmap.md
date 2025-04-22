@@ -1,7 +1,9 @@
 # Features development
 * API Key generation
-  * Delete API Keys
-  * List API Keys
+  * [x] Delete API Keys
+  * [x] List API Keys
+  * Rate limiting
+
 * API uses
   * Show uses
   * Charts
@@ -20,7 +22,6 @@
     * Disable payment button during processing
     * Server-side check before processing payment
   * Payment Cancel
-* Rate limiting
 * User registration
   * Email
 

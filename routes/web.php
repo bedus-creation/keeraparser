@@ -40,31 +40,33 @@ Route::middleware(['auth', 'verified'])->get('billing/stripe/success', function 
         'payment' => [
             'created_at'   => Carbon::parse($session->created)->format('Y-m-d'),
             'plan'         => $plan,
-            'total_amount' => \Illuminate\Support\Number::currency($session->amount_total/100)
+            'total_amount' => \Illuminate\Support\Number::currency($session->amount_total / 100)
         ],
     ]);
 })->name('billing.stripe.success');
 
-Route::middleware(['auth', 'verified'])->get('billing', function (Request $request) {
-    $plan = $request->input('plan');
-
-    $planPrice = config('pricing.'.strtolower($plan));
-
-    return request()->user()
-        ->newSubscription($plan, $planPrice['stripe_product_price'])
-        ->checkout([
-            'success_url' => route('billing.stripe.success')."?session_id={CHECKOUT_SESSION_ID}",
-            'cancel_url'  => route('billing.stripe.success'),
-            'metadata'    => [
-                'plan' => $plan,
-            ]
-        ], []);
-})->name('billing');
-
 Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('billing', function (Request $request) {
+        $plan = $request->input('plan');
+
+        $planPrice = config('pricing.'.strtolower($plan));
+
+        return request()->user()
+            ->newSubscription($plan, $planPrice['stripe_product_price'])
+            ->checkout([
+                'success_url' => route('billing.stripe.success')."?session_id={CHECKOUT_SESSION_ID}",
+                'cancel_url'  => route('billing.stripe.success'),
+                'metadata'    => [
+                    'plan' => $plan,
+                ]
+            ], []);
+    })->name('billing');
+
+
     Route::get('dashboard', function () {
         return Inertia::render('dashboard');
     })->name('dashboard');
+
 
     Route::get('chats', function () {
         $parsers = ParserQuery::getParserList();
@@ -195,6 +197,26 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return Inertia::render('parsers/index', [
             'parsers' => $results,
             'params'  => $request->all()
+        ]);
+    });
+
+    Route::post('/tokens/create', function (Request $request) {
+        $token = $request->user()->createToken($request->input('name'));
+
+        return response()->json(['token' => $token->plainTextToken]);
+    })->name('tokens.create');
+
+    Route::delete('/tokens/{id}', function (Request $request, string $id) {
+        $request->user()->tokens()->where('id', $id)->delete();
+
+        return redirect()->back();
+    })->name('tokens.delete');
+
+    Route::get('api-keys', function () {
+        $tokens = auth()->user()->tokens;
+
+        return Inertia::render('api-keys/index', [
+            'apiKeys' => \App\Http\Resources\Token::collection($tokens),
         ]);
     });
 });
