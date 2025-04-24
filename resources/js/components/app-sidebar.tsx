@@ -33,8 +33,9 @@ const footerNavItems: NavItem[] = [
     },
     {
         title: "API Documentation",
-        url: "https://laravel.com/docs/starter-kits",
+        url: "/docs/api",
         icon: BookOpen,
+        target: '_blank'
     },
 ]
 
