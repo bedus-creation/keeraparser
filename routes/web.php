@@ -218,7 +218,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return Inertia::render('api-keys/index', [
             'apiKeys' => \App\Http\Resources\Token::collection($tokens),
         ]);
-    });
+    })->name('api-keys.index');
 });
 
 require __DIR__.'/settings.php';
