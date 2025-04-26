@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
+ * @property-read string $name
  * @property-read Schema $schema
  */
 class Parser extends Model

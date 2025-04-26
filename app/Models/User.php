@@ -2,13 +2,18 @@
 
 namespace App\Models;
 
+use App\Constants\SubscriptionPlan;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Cashier\Billable;
+use Laravel\Cashier\Subscription;
 use Laravel\Sanctum\HasApiTokens;
 
+/**
+ * @property-read int $id
+ */
 class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
@@ -51,5 +56,13 @@ class User extends Authenticatable implements MustVerifyEmail
             'trial_ends_at'     => 'datetime',
             'password'          => 'hashed',
         ];
+    }
+
+    public function getSubscriptionPlan(): SubscriptionPlan
+    {
+        /** @var Subscription|null $subscription */
+        $subscription = $this->subscriptions?->first();
+
+        return $subscription ? SubscriptionPlan::from($subscription->type) : SubscriptionPlan::FREE;
     }
 }

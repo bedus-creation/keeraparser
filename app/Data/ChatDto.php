@@ -8,13 +8,13 @@ use Carbon\Carbon;
 use Spatie\LaravelData\Attributes\WithTransformer;
 use Spatie\LaravelData\Data;
 
-class ChatData extends Data
+class ChatDto extends Data
 {
     public function __construct(
         public string $id,
         #[WithTransformer(DateTransformer::class)]
         public Carbon $created_at,
 
-        public ParserInfoData $parser,
+        public ParserInfoDto $parser,
     ) {}
 }

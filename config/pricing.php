@@ -11,10 +11,10 @@ return [
     ],
 
     'pro' => [
-        'stripe_product_id' => 'prod_S8WUnt2uiwktDS',
+        'stripe_product_id'    => 'prod_S8WUnt2uiwktDS',
         'stripe_product_price' => 'price_1REFRLRBEjHNz432MjyDXJAG',
-        'Price'      => 99.99,
-        'features'   => [
+        'Price'                => 99.99,
+        'features'             => [
             '5000 parses/month'
         ]
     ]

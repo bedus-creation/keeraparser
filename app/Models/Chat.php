@@ -5,11 +5,17 @@ namespace App\Models;
 use App\Constants\ChatStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
 /**
- * @property-read Parser $parser
+ * @property-read int        $id
+ * @property-read Parser     $parser
+ * @property-read ChatStatus $status
+ * @property-read Carbon     $created_at
+ * @property-read Carbon     $response_completed_at
+ * @property-read array      $response
  */
 class Chat extends Model implements HasMedia
 {

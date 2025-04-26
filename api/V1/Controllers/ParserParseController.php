@@ -3,11 +3,16 @@
 namespace Api\V1\Controllers;
 
 use Api\V1\Requests\ParserParseRequest;
+use App\Actions\ChatInitiateAction;
 use App\Constants\ChatStatus;
+use App\Data\ChatStoreDto;
 use App\Http\Controllers\Controller;
+use App\Models\Chat;
 use Carbon\Carbon;
 use Dedoc\Scramble\Attributes\Group;
 use Illuminate\Http\JsonResponse;
+use Spatie\MediaLibrary\MediaCollections\Exceptions\FileDoesNotExist;
+use Spatie\MediaLibrary\MediaCollections\Exceptions\FileIsTooBig;
 
 #[Group('Parsers')]
 class ParserParseController extends Controller
@@ -23,46 +28,63 @@ class ParserParseController extends Controller
      *
      *  Once setup is complete, you're ready to hit this endpoint.
      *
-     * @param int $id The Parser's id that you have configured. [PDF parsers](https://keeraparser.com/parsers)
+     * @param ParserParseRequest $request
+     * @param ChatInitiateAction $action
+     * @param int                $id The Parser's id that you have configured. [PDF parsers](https://keeraparser.com/parsers)
+     *
+     * @return JsonResponse
+     * @throws FileDoesNotExist
+     * @throws FileIsTooBig
      */
-    public function __invoke(ParserParseRequest $request, int $id): JsonResponse
-    {
+    public function __invoke(
+        ParserParseRequest $request,
+        ChatInitiateAction $action,
+        int $id
+    ): JsonResponse {
+        $chatStoreDto = ChatStoreDto::from([...$request->all(), 'parser_id' => $id]);
+
+        $chat = $action
+            ->prepare($request->user(), $chatStoreDto)
+            ->dispatchSync()
+            ->execute();
+
+        $chat = Chat::query()->with('parser')->findOrFail($chat->id);
+
         return response()->json([
             /**
              * @var int
              * Unique identifiers to track your parsing request
              */
-            'id'                      => 1,
+            'id'                      => $chat->id,
 
             /**
              * @var string
              * [Parser](https://keeraparser.com/parsers) name that you have given.
              */
-            'parser_name'             => '',
+            'parser_name'             => $chat->parser->name,
 
             /**
              * @var ChatStatus
              */
-            'status'                  => 'completed',
+            'status'                  => $chat->status,
 
             /**
              * @var Carbon
              * The Parsing started date in YYYY-MM-DD H:i:s format
              */
-            'created_at'              => now(),
+            'created_at'              => $chat->created_at?->format('Y-m-d H:i:s'),
 
             /**
              * @var Carbon
              * The Parsing completed timestamp in YYYY-MM-DD H:i:s format
              */
-            'completed_at'            => now()->format('Y-m-d H:i:s'),
+            'completed_at'            => $chat->response_completed_at?->format('Y-m-d H:i:s'),
 
             /**
              * @var array
              * The structured json response as defined in Parser.
              */
-            'structure_json_response' => [
-            ],
+            'structure_json_response' => $chat->response,
         ]);
     }
 }

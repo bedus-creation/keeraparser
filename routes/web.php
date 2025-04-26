@@ -1,8 +1,9 @@
 <?php
 
+use App\Actions\ChatInitiateAction;
+use App\Data\ChatStoreDto;
 use App\Filters\ParserFilter;
 use App\Http\Requests\ChatRequest;
-use App\Jobs\ChatProcessJob;
 use App\Models\Chat;
 use App\Models\Parser;
 use App\Queries\ParserQuery;
@@ -18,34 +19,34 @@ Route::get('/', function () {
     return Inertia::render('index');
 })->name('landing.index');
 
-Route::middleware(['auth', 'verified'])->get('billing/stripe/success', function (Request $request) {
-    $sessionId = $request->get('session_id');
+Route::middleware(['auth', 'verified', 'throttle:keera-api'])->group(function () {
+    Route::get('billing/stripe/success', function (Request $request) {
+        $sessionId = $request->get('session_id');
 
-    if ($sessionId === null) {
-        return;
-    }
+        if ($sessionId === null) {
+            return;
+        }
 
-    $session = Cashier::stripe()->checkout->sessions->retrieve($sessionId);
+        $session = Cashier::stripe()->checkout->sessions->retrieve($sessionId);
 
-    if ($session->payment_status !== 'paid') {
-        return;
-    }
+        if ($session->payment_status !== 'paid') {
+            return;
+        }
 
-    // TODO: send an invoice
-    // User may refresh this page, invoice should be sent once
+        // TODO: send an invoice
+        // User may refresh this page, invoice should be sent once
 
-    $plan = $session['metadata']['plan'] ?? null;
+        $plan = $session['metadata']['plan'] ?? null;
 
-    return inertia('payments/success', [
-        'payment' => [
-            'created_at'   => Carbon::parse($session->created)->format('Y-m-d'),
-            'plan'         => $plan,
-            'total_amount' => \Illuminate\Support\Number::currency($session->amount_total / 100)
-        ],
-    ]);
-})->name('billing.stripe.success');
+        return inertia('payments/success', [
+            'payment' => [
+                'created_at'   => Carbon::parse($session->created)->format('Y-m-d'),
+                'plan'         => $plan,
+                'total_amount' => \Illuminate\Support\Number::currency($session->amount_total / 100)
+            ],
+        ]);
+    })->name('billing.stripe.success');
 
-Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('billing', function (Request $request) {
         $plan = $request->input('plan');
 
@@ -86,30 +87,22 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ]);
     })->name('chats.show');
 
-    Route::post('chats', function (ChatRequest $request) {
-        $chat = Chat::query()->create([
-            'user_id'     => auth()->id(),
-            'parser_type' => 'resume',
-            'parser_id'   => $request->integer('parser_id'),
-        ]);
+    Route::post('chats', function (ChatRequest $request, ChatInitiateAction $action) {
+        $user         = auth()->user();
+        $chatStoreDto = ChatStoreDto::from($request);
 
-        $files = $request->file('files') ?? [];
-
-        foreach ($files as $file) {
-            $chat->addMedia($file)->toMediaCollection();
-        }
-
-        ChatProcessJob::dispatch($chat->id);
+        $chat = $action->prepare($user, $chatStoreDto)->execute();
 
         return redirect()->to(route('chats.show', $chat->id));
     });
 
     Route::get('histories', function () {
-        $chats             = \App\Data\ChatData::collect(
+        $chats = \App\Data\ChatDto::collect(
             Chat::query()
                 ->with('parser')
                 ->orderBy('id', 'desc')->paginate()
         );
+
         $histories['data'] = $chats->items();
         unset($chats['data']);
         $histories['meta'] = $chats->toArray();

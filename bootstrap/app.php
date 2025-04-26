@@ -15,11 +15,11 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        $middleware->encryptCookies(except: ['appearance']);
-
-        $middleware->validateCsrfTokens(except: [
-            'stripe/*',
-        ]);
+        $middleware
+            ->encryptCookies(except: ['appearance'])
+            ->validateCsrfTokens(except: [
+                'stripe/*',
+            ]);
 
         $middleware->web(append: [
             HandleAppearance::class,

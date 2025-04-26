@@ -4,12 +4,13 @@ namespace App\Queries;
 
 use App\Models\Parser;
 use Illuminate\Database\Eloquent\Builder;
+use App\Data\ParserInfoDto;
 
 class ParserQuery
 {
     public static function getParserList(string|null $search = null): array
     {
-        return \App\Data\ParserInfoData::collect(
+        return ParserInfoDto::collect(
             items: Parser::query()
                 ->select('id', 'name')
                 ->where('type', 'resume')

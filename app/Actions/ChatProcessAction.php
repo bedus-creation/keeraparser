@@ -2,6 +2,8 @@
 
 namespace App\Actions;
 
+use App\Constants\ChatStatus;
+use App\Models\Chat;
 use Prism\Prism\Enums\Provider;
 use Prism\Prism\Prism;
 use Prism\Prism\ValueObjects\Messages\Support\Document;
@@ -20,7 +22,7 @@ class ChatProcessAction
 
     public function handle(): void
     {
-        $chat = \App\Models\Chat::query()
+        $chat = Chat::query()
             ->with(['parser', 'parser.schema'])
             ->findOrFail($this->chatId);
 
@@ -38,8 +40,20 @@ class ChatProcessAction
 
         $messages = [new UserMessage($parser->user_prompt, $attachments)];
 
+        $payload = [
+            'schema'        => $schema->toArray(),
+            'system_prompt' => $parser->system_prompt,
+            'user_prompt'   => $parser->user_prompt,
+            'attachments'   => $attachments
+        ];
+
+        $chat->update([
+            'payload' => $payload
+        ]);
+
         $result = Prism::structured()
             ->using(Provider::Gemini, 'gemini-2.0-flash')
+            ->withClientOptions(['timeout' => 200])
             ->withSystemPrompt($parser->system_prompt)
             ->withSchema($schema)
             ->withMessages($messages)
@@ -47,6 +61,7 @@ class ChatProcessAction
             ->structured;
 
         $chat->update([
+            'status'                => ChatStatus::COMPLETED,
             'response_completed_at' => now(),
             'response'              => $result,
         ]);

@@ -4,7 +4,7 @@ namespace App\Data;
 
 use Spatie\LaravelData\Data;
 
-class ParserInfoData extends Data
+class ParserInfoDto extends Data
 {
     public function __construct(
         public string $id,
