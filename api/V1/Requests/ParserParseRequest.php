@@ -21,6 +21,7 @@ class ParserParseRequest extends FormRequest
             ],
             'files.*'  => [
                 Rule::file()
+                    ->max(10240)
                     ->types('pdf,docx')
             ],
             'params'   => ['array'],
