@@ -100,7 +100,8 @@ Route::middleware(['auth', 'verified', 'throttle:keera-api'])->group(function ()
         $chats = \App\Data\ChatDto::collect(
             Chat::query()
                 ->with('parser')
-                ->orderBy('id', 'desc')->paginate()
+                ->orderBy('id', 'desc')
+                ->paginate()
         );
 
         $histories['data'] = $chats->items();

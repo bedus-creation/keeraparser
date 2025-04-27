@@ -1,17 +1,19 @@
+import AppLogo from '@/components/app-logo';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Link } from '@inertiajs/react';
 import { BarChart, CheckCircle, Code, FileUp, Globe, Shield, XCircle } from 'lucide-react';
 import JapaneseResumeImage from '../../images/japanese-resume-to-json.png';
+import Logo from '../../images/logo.png';
 
 export default function Index() {
     return (
         <div className="flex min-h-screen flex-col">
             <header className="border-b">
-                <div className="container mx-auto flex h-16 items-center justify-between py-4">
+                <div className="container mx-auto flex h-16 items-center justify-between py-4 px-4 md:px-6">
                     <div className="flex items-center gap-2 text-xl font-bold">
-                        <FileUp className="h-6 w-6" />
-                        <span>ResumeAI</span>
+                        <img src={Logo} alt="Keera Parser! Parse Resume " className="object-contain h-[45px]" />
+                        <span className="font-roboto-sans leading-tight">Keera Parser</span>
                     </div>
                     <nav className="hidden gap-6 md:flex">
                         <Link href="#features" className="text-sm font-medium underline-offset-4 hover:underline">
@@ -394,8 +396,7 @@ export default function Index() {
             <footer className="border-t py-6 md:py-0">
                 <div className="container mx-auto flex flex-col items-center justify-between gap-4 md:h-24 md:flex-row">
                     <div className="flex items-center gap-2 font-bold">
-                        <FileUp className="h-5 w-5" />
-                        <span>ResumeAI</span>
+                        <AppLogo/>
                     </div>
                     <p className="text-muted-foreground text-center text-sm leading-loose md:text-left">
                         &copy; {new Date().getFullYear()} ResumeAI. All rights reserved.

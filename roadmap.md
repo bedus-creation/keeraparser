@@ -1,8 +1,4 @@
 # Features development
-* API Key generation
-  * [x] Delete API Keys
-  * [x] List API Keys
-  * Rate limiting
 
 * API uses
   * Show uses
@@ -10,7 +6,6 @@
   * Billing
     * Manage payment Method
   * Billing History
-* API documentation
 * Pricing Page
   * Payment Successful
     * Send confirmation email/invoice

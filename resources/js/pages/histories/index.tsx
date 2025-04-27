@@ -4,7 +4,7 @@ import { DataTable } from '@/pages/histories/datatable';
 import { ChatHistory } from '@/pages/histories/types';
 import { Pagination } from '@/types';
 import { Head, router, usePage } from '@inertiajs/react';
-type PageProps = ReturnType<typeof usePage>['props'];
+
 export default function Histories({ histories }: { histories: { data: ChatHistory[]; meta: Pagination } }) {
     const params = (usePage()['props'].params || { q: '', page: 1 }) as {
         q: string;

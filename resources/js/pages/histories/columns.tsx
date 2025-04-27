@@ -9,21 +9,26 @@ export const columns: ColumnDef<ChatHistory>[] = [
         header: 'ID',
     },
     {
+        accessorKey: 'parser.name',
+        header: 'Parser Name',
+    },
+    {
         accessorKey: 'created_at.diff',
         header: 'Created At',
     },
     {
-        accessorKey: 'parser.name',
-        header: 'Parser',
-    },
-
-    {
+        accessorKey: 'status',
         header: 'Status',
     },
 
     {
+        accessorKey: 'response_completed_at.diff',
+        header: 'Completed at',
+    },
+
+    {
         header: 'Action',
-        cell: ({ row }) => {
+        cell: () => {
             return (
                 <Button variant="outline" size="icon">
                     <ChevronRight />
