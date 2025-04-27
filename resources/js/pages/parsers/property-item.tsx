@@ -1,20 +1,21 @@
 import { Button } from '@/components/ui/button';
-import { SchemaProperty } from '@/pages/parsers/type';
+import { PropertyEditModal } from '@/pages/parsers/property-edit-modal';
+import { SchemaItem } from '@/pages/parsers/type';
 import { router } from '@inertiajs/react';
-import { ChevronDown, ChevronRight, Plus, Trash2 } from 'lucide-react';
+import { ChevronDown, ChevronRight, Pen, Plus, Trash2 } from 'lucide-react';
 
 export function PropertyItem({
     openAddPropertyDialog,
     expandedProps,
     toggleExpand,
     property,
-    path
+    path,
 }: {
-    openAddPropertyDialog: (schema_id: number)=> void;
+    openAddPropertyDialog: (schema_id: number) => void;
     expandedProps: Record<string, boolean>;
     toggleExpand: (path: string) => void;
-    property: SchemaProperty;
-    path: string[]
+    property: SchemaItem;
+    path: string[];
 }) {
     const fullPath = [...path, property.name].join('.');
     const isExpanded = expandedProps[fullPath] || false;
@@ -56,6 +57,20 @@ export function PropertyItem({
                             <Plus className="h-4 w-4" />
                         </Button>
                     )}
+                    <PropertyEditModal schema={property}>
+                        {(props) => (
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={(event) => {
+                                    event.preventDefault();
+                                    props.onClick();
+                                }}
+                            >
+                                <Pen className="text-black-500 h-4 w-4" />
+                            </Button>
+                        )}
+                    </PropertyEditModal>
                     <Button
                         variant="ghost"
                         size="sm"

@@ -1,9 +1,9 @@
 import { JsonSchemaEditor } from '@/components/json-schema-edit';
 import AppLayout from '@/layouts/app-layout';
-import { JsonSchema, Parser } from '@/pages/parsers/type';
+import { Parser, SchemaItem } from '@/pages/parsers/type';
 import type { BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
-export default function ParserEdit({ parser, schema }: { schema: JsonSchema, parser: Parser }) {
+export default function ParserEdit({ parser, schema }: { schema: SchemaItem, parser: Parser }) {
     const breadcrumbs: BreadcrumbItem[] = [
         {
             title: 'Parsers',

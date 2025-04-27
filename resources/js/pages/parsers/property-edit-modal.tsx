@@ -1,52 +1,33 @@
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { PropertyType, SchemaFormType } from '@/pages/parsers/type';
+import { PropertyType, SchemaFormType, SchemaItem } from '@/pages/parsers/type';
 import { router, useForm } from '@inertiajs/react';
 import { Trash2 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
-export function PropertyAddModal({
-    schema_id,
+export function PropertyEditModal({
     schema,
     children,
 }: {
-    schema_id: number;
-    schema?: SchemaFormType,
+    schema: SchemaItem;
     children?: (props: { onClick: () => void }) => React.ReactNode;
 }) {
     const [open, setOpen] = useState<boolean>(false);
-    const [isArrayItemProperty, setIsArrayItemProperty] = useState(false);
-    const currentPath = '';
 
-    const { data, setData, post, put, reset } = useForm<{
-        schema_id: number;
-        name: string;
-        type: string;
-        description?: string;
-        required: boolean;
-        items?: {
-            type: PropertyType;
-        } | null;
-        enum?: string[] | null;
-    }>({
-        schema_id: schema_id,
-        name: '',
+    const { data, setData, put, reset } = useForm<SchemaFormType>({
+        parent_id: schema.parent_id,
+        name: schema.name,
         type: 'string',
-        description: '',
-        required: false,
-        items: null,
-        enum: null,
+        description: schema.description,
+        required: schema.required,
+        enum: schema.enum,
     });
-
-    if (!schema) {
-        return <></>
-    }
 
     useEffect(() => {
         setData((previousData) => ({
@@ -56,19 +37,23 @@ export function PropertyAddModal({
             type: schema.type,
             description: schema.description,
             required: schema.required,
-            enum: schema.enum
+            enum: schema.enum,
         }));
     }, [schema, setData]);
 
-    const addProperty = (event: React.MouseEvent<HTMLButtonElement>) => {
+    if (!schema) {
+        return <></>;
+    }
+
+    const updateProperty = (event: React.MouseEvent<HTMLButtonElement>) => {
         event.preventDefault();
 
-        post('/schemas', {
+        put(`/schemas/${schema.id}`, {
             preserveScroll: true,
             onSuccess: () => {
                 router.reload();
                 setOpen(false);
-                toast.success('Property Added Successfully');
+                toast.success('Property Updated Successfully');
                 reset();
             },
             onError: (error) => {
@@ -109,14 +94,7 @@ export function PropertyAddModal({
             <Dialog open={open} onOpenChange={() => setOpen(false)}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>{isArrayItemProperty ? 'Add Property to Array Item' : 'Add New Property'}</DialogTitle>
-                        <DialogDescription>
-                            {isArrayItemProperty
-                                ? `Adding property to items in ${currentPath.join('.')}`
-                                : currentPath.length > 0
-                                  ? `Adding property to ${currentPath.join('.')}`
-                                  : 'Adding property to root object'}
-                        </DialogDescription>
+                        <DialogTitle>Edit Property</DialogTitle>
                     </DialogHeader>
                     <div className="grid gap-4 py-4">
                         <div className="grid gap-2">
@@ -245,7 +223,7 @@ export function PropertyAddModal({
                         <Button variant="outline" onClick={() => setOpen(false)}>
                             Cancel
                         </Button>
-                        <Button onClick={addProperty}>Save Changes</Button>
+                        <Button onClick={updateProperty}>Save Changes</Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

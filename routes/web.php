@@ -4,6 +4,7 @@ use App\Actions\ChatInitiateAction;
 use App\Data\ChatStoreDto;
 use App\Filters\ParserFilter;
 use App\Http\Requests\ChatRequest;
+use App\Http\Requests\SchemaUpdateRequest;
 use App\Models\Chat;
 use App\Models\Parser;
 use App\Queries\ParserQuery;
@@ -91,7 +92,10 @@ Route::middleware(['auth', 'verified', 'throttle:keera-api'])->group(function ()
         $user         = auth()->user();
         $chatStoreDto = ChatStoreDto::from($request);
 
-        $chat = $action->prepare($user, $chatStoreDto)->execute();
+        $chat = $action
+            ->prepare($user, $chatStoreDto)
+            ->processSync()
+            ->execute();
 
         return redirect()->to(route('chats.show', $chat->id));
     });
@@ -117,6 +121,16 @@ Route::middleware(['auth', 'verified', 'throttle:keera-api'])->group(function ()
     Route::post('schemas', function (Request $request) {
         \App\Models\Schema::query()
             ->create($request->all());
+
+        return redirect()->back();
+    });
+
+    Route::put('schemas/{id}', function (SchemaUpdateRequest $request, int $id) {
+        // TODO: authorize the request
+        \App\Models\Schema::query()
+            ->where('id', $id)
+            ->firstOrFail()
+            ->update($request->all());
 
         return redirect()->back();
     });

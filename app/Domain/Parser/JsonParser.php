@@ -12,20 +12,26 @@ use Prism\Prism\Schema\StringSchema;
 
 class JsonParser
 {
-    public function toJson(Schema $schema): array
+    public function toJson(Schema $schema, string $path): array
     {
         $result['id']          = $schema->id;
+        $result['parent_id']   = $schema->schema_id;
+        $result['path']        = $path;
         $result['name']        = $schema->name;
         $result['type']        = $schema->type;
+        $result['required']    = $schema->required;
         $result['description'] = $schema->description;
         $result['enum']        = $schema->enum;
         $result['items']       = $schema->items;
 
-        $handleObject = function ($id) {
+        $currentPath = implode('.', array_map(strtolower(...), array_filter([$path, $schema->name])));
+
+        $handleObject = function ($id) use ($currentPath) {
             $properties = Schema::query()->where('schema_id', $id)->get();
-            $data       = [];
+
+            $data = [];
             foreach ($properties as $property) {
-                [$name, $value] = $this->toJson($property);
+                [$name, $value] = $this->toJson($property, $currentPath);
                 $data[$name] = $value;
             }
 
@@ -44,12 +50,12 @@ class JsonParser
 
         $result['properties'] = $properties;
 
-        return [$schema->name, array_filter($result)];
+        return [$schema->name, array_filter($result, fn($item) => !is_null($item))];
     }
 
     public function toJsonSchema(Schema $schema)
     {
-        $json = $this->toJson($schema);
+        $json = $this->toJson($schema, '');
 
         return $this->arrayToSchema($json[1]);
     }

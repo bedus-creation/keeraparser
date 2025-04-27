@@ -8,27 +8,21 @@ export interface Parser {
     system_prompt: string;
 }
 
-export interface SchemaProperty {
+export interface SchemaItem {
     id: number;
+    parent_id?: number;
+    path: string;
     name: string;
-    type: PropertyType;
     description?: string;
-    required: boolean;
-    default?: any;
-    properties?: Record<string, SchemaProperty>;
-    items?: SchemaProperty;
+    type?: PropertyType | null;
+    enum?: string[] | null;
+    required?: boolean;
+    properties?: Record<string, SchemaItem>;
+    items?: SchemaItem;
 }
+
+export type SchemaFormType = Omit<SchemaItem, 'id' | 'path' | 'properties' | 'items'>;
 
 export type PropertyType = 'string' | 'number' | 'boolean' | 'enum' | 'object' | 'array' | 'null' | 'integer';
-
-export interface JsonSchema {
-    id: number;
-    title: string;
-    description: string;
-    type: 'object';
-    properties: Record<string, SchemaProperty>;
-    required: string[];
-    enum: string[];
-}
 
 export type ParserPaginate = { data: Parser[]; pagination: Pagination };
