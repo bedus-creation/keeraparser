@@ -5,75 +5,57 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { PropertyType, SchemaFormType } from '@/pages/parsers/type';
-import { router, useForm } from '@inertiajs/react';
+import { PropertyType } from '@/pages/parsers/type';
+import { InertiaFormProps, router, useForm } from '@inertiajs/react';
 import { Trash2 } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
-import { toast } from 'sonner';
+import { useEffect, useState } from 'react';
 
-export function PropertyAddModal({
-    schema_id,
-    schema,
-    children,
-}: {
-    schema_id: number;
-    schema?: SchemaFormType,
-    children?: (props: { onClick: () => void }) => React.ReactNode;
-}) {
-    const [open, setOpen] = useState<boolean>(false);
+export function PropertyAddModal({ open, schema_id, onClose }: { open: boolean; schema_id: number; onClose: (open: boolean) => void }) {
     const [isArrayItemProperty, setIsArrayItemProperty] = useState(false);
     const currentPath = '';
 
-    const { data, setData, post, put, reset } = useForm<{
+    const {
+        data,
+        setData,
+        post,
+        processing,
+        errors
+    }: InertiaFormProps<{
         schema_id: number;
         name: string;
         type: string;
-        description?: string;
+        description: string;
         required: boolean;
         items?: {
             type: PropertyType;
-        } | null;
-        enum?: string[] | null;
-    }>({
+        }
+        enum?: string[];
+    }> = useForm({
         schema_id: schema_id,
         name: '',
         type: 'string',
         description: '',
         required: false,
         items: null,
-        enum: null,
+        enum: null
     });
-
-    if (!schema) {
-        return <></>
-    }
 
     useEffect(() => {
         setData((previousData) => ({
             ...previousData,
-            schema_id: schema.id,
-            name: schema.name,
-            type: schema.type,
-            description: schema.description,
-            required: schema.required,
-            enum: schema.enum
+            schema_id
         }));
-    }, [schema, setData]);
+    }, [schema_id, setData]);
 
-    const addProperty = (event: React.MouseEvent<HTMLButtonElement>) => {
+    const addProperty = (event) => {
         event.preventDefault();
 
         post('/schemas', {
-            preserveScroll: true,
             onSuccess: () => {
                 router.reload();
-                setOpen(false);
-                toast.success('Property Added Successfully');
-                reset();
-            },
-            onError: (error) => {
-                toast.success(error.message);
-            },
+
+                onClose(false);
+            }
         });
     };
 
@@ -86,7 +68,7 @@ export function PropertyAddModal({
 
             return {
                 ...prev,
-                enum: [...currentEnum, value],
+                enum: [...currentEnum, value]
             };
         });
     };
@@ -97,40 +79,137 @@ export function PropertyAddModal({
 
             return {
                 ...prev,
-                enum: prev.enum.filter((v) => v !== value),
+                enum: prev.enum.filter((v) => v !== value)
             };
         });
     };
 
-    return (
-        <>
-            {children && children({ onClick: () => setOpen(!open) })}
+    if (!open) return null;
 
-            <Dialog open={open} onOpenChange={() => setOpen(false)}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>{isArrayItemProperty ? 'Add Property to Array Item' : 'Add New Property'}</DialogTitle>
-                        <DialogDescription>
-                            {isArrayItemProperty
-                                ? `Adding property to items in ${currentPath.join('.')}`
-                                : currentPath.length > 0
-                                  ? `Adding property to ${currentPath.join('.')}`
-                                  : 'Adding property to root object'}
-                        </DialogDescription>
-                    </DialogHeader>
-                    <div className="grid gap-4 py-4">
-                        <div className="grid gap-2">
-                            <Label htmlFor="name">Property Name</Label>
-                            <Input
-                                id="name"
-                                value={data.name}
-                                onChange={(e) => setData({ ...data, name: e.target.value })}
-                                placeholder="e.g. firstName"
-                            />
+    return (
+        <Dialog open={open} onOpenChange={onClose}>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>{isArrayItemProperty ? 'Add Property to Array Item' : 'Add New Property'}</DialogTitle>
+                    <DialogDescription>
+                        {isArrayItemProperty
+                            ? `Adding property to items in ${currentPath.join('.')}`
+                            : currentPath.length > 0
+                                ? `Adding property to ${currentPath.join('.')}`
+                                : 'Adding property to root object'}
+                    </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                    <div className="grid gap-2">
+                        <Label htmlFor="name">Property Name</Label>
+                        <Input
+                            id="name"
+                            value={data.name}
+                            onChange={(e) => setData({ ...data, name: e.target.value })}
+                            placeholder="e.g. firstName"
+                        />
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="type">Type</Label>
+                        <Select value={data.type} onValueChange={(value) => setData({ ...data, type: value as PropertyType })}>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select type" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="string">String</SelectItem>
+                                <SelectItem value="number">Number</SelectItem>
+                                <SelectItem value="integer">Integer</SelectItem>
+                                <SelectItem value="boolean">Boolean</SelectItem>
+                                <SelectItem value="enum">Enum</SelectItem>
+                                <SelectItem value="object">Object</SelectItem>
+                                <SelectItem value="array">Array</SelectItem>
+                                <SelectItem value="null">Null</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    {data.type === 'enum' && (
+                        <div className="flex flex-col gap-2">
+                            <div className="flex gap-2">
+                                <Input
+                                    placeholder="Add enum value"
+                                    id="enumValue"
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                            const input = e.currentTarget;
+                                            addEnumValue(input.value);
+                                            input.value = '';
+                                        }
+                                    }}
+                                />
+                                <Button
+                                    type="button"
+                                    onClick={() => {
+                                        const input = document.getElementById('enumValue') as HTMLInputElement;
+                                        addEnumValue(input.value);
+                                        input.value = '';
+                                    }}
+                                >
+                                    Add
+                                </Button>
+                            </div>
                         </div>
+                    )}
+
+                    {data.type === 'enum' && data.enum?.length && data.enum?.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-2">
+                            {data.enum?.map((value) => (
+                                <div
+                                    key={value}
+                                    className="flex items-center gap-1 bg-blue-50 text-blue-800 px-2 py-1 rounded text-xs">
+                                    {value}
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        className="h-4 w-4 p-0"
+                                        onClick={() => removeEnumValue(value)}
+                                    >
+                                        <Trash2 className="h-3 w-3" />
+                                    </Button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+
+                    <div className="grid gap-2">
+                        <Label htmlFor="description">Description</Label>
+                        <Textarea
+                            id="description"
+                            value={data.description || ''}
+                            onChange={(e) => setData({ ...data, description: e.target.value })}
+                            placeholder="Describe this property"
+                        />
+                    </div>
+                    <div className="flex items-center space-x-2">
+                        <Checkbox
+                            id="required"
+                            checked={data.required}
+                            onCheckedChange={(checked) => setData({ ...data, required: checked === true })}
+                        />
+                        <Label htmlFor="required">Required</Label>
+                    </div>
+
+                    {data.type === 'array' && (
                         <div className="grid gap-2">
-                            <Label htmlFor="type">Type</Label>
-                            <Select value={data.type} onValueChange={(value) => setData({ ...data, type: value as PropertyType })}>
+                            <Label>Array Items Type</Label>
+                            <Select
+                                value={data.items?.type || 'string'}
+                                onValueChange={(value) =>
+                                    setData({
+                                        ...data,
+                                        items: {
+                                            ...data.items,
+                                            type: value,
+                                        }
+                                    })
+                                }
+                            >
                                 <SelectTrigger>
                                     <SelectValue placeholder="Select type" />
                                 </SelectTrigger>
@@ -139,116 +218,19 @@ export function PropertyAddModal({
                                     <SelectItem value="number">Number</SelectItem>
                                     <SelectItem value="integer">Integer</SelectItem>
                                     <SelectItem value="boolean">Boolean</SelectItem>
-                                    <SelectItem value="enum">Enum</SelectItem>
                                     <SelectItem value="object">Object</SelectItem>
-                                    <SelectItem value="array">Array</SelectItem>
-                                    <SelectItem value="null">Null</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
-
-                        {data.type === 'enum' && (
-                            <div className="flex flex-col gap-2">
-                                <div className="flex gap-2">
-                                    <Input
-                                        placeholder="Add enum value"
-                                        id="enumValue"
-                                        onKeyDown={(e) => {
-                                            if (e.key === 'Enter') {
-                                                const input = e.currentTarget;
-                                                addEnumValue(input.value);
-                                                input.value = '';
-                                            }
-                                        }}
-                                    />
-                                    <Button
-                                        type="button"
-                                        onClick={() => {
-                                            const input = document.getElementById('enumValue') as HTMLInputElement;
-                                            addEnumValue(input.value);
-                                            input.value = '';
-                                        }}
-                                    >
-                                        Add
-                                    </Button>
-                                </div>
-                            </div>
-                        )}
-
-                        {data.type === 'enum' && data.enum?.length && data.enum?.length > 0 && (
-                            <div className="mt-2 flex flex-wrap gap-1">
-                                {data.enum?.map((value) => (
-                                    <div key={value} className="flex items-center gap-1 rounded bg-blue-50 px-2 py-1 text-xs text-blue-800">
-                                        {value}
-                                        <Button
-                                            type="button"
-                                            variant="ghost"
-                                            size="sm"
-                                            className="h-4 w-4 p-0"
-                                            onClick={() => removeEnumValue(value)}
-                                        >
-                                            <Trash2 className="h-3 w-3" />
-                                        </Button>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-
-                        <div className="grid gap-2">
-                            <Label htmlFor="description">Description</Label>
-                            <Textarea
-                                id="description"
-                                value={data.description || ''}
-                                onChange={(e) => setData({ ...data, description: e.target.value })}
-                                placeholder="Describe this property"
-                            />
-                        </div>
-                        <div className="flex items-center space-x-2">
-                            <Checkbox
-                                id="required"
-                                checked={data.required}
-                                onCheckedChange={(checked) => setData({ ...data, required: checked === true })}
-                            />
-                            <Label htmlFor="required">Required</Label>
-                        </div>
-
-                        {data.type === 'array' && (
-                            <div className="grid gap-2">
-                                <Label>Array Items Type</Label>
-                                <Select
-                                    value={data.items?.type || 'string'}
-                                    onValueChange={(value) =>
-                                        setData({
-                                            ...data,
-                                            items: {
-                                                ...data.items,
-                                                type: value,
-                                            },
-                                        })
-                                    }
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select type" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="string">String</SelectItem>
-                                        <SelectItem value="number">Number</SelectItem>
-                                        <SelectItem value="integer">Integer</SelectItem>
-                                        <SelectItem value="boolean">Boolean</SelectItem>
-                                        <SelectItem value="object">Object</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        )}
-                    </div>
-                    <DialogFooter>
-                        <Button variant="outline" onClick={() => setOpen(false)}>
-                            Cancel
-                        </Button>
-                        <Button onClick={addProperty}>Save Changes</Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
-        </>
+                    )}
+                </div>
+                <DialogFooter>
+                    <Button variant="outline" onClick={() => onClose(false)}>
+                        Cancel
+                    </Button>
+                    <Button onClick={addProperty}>Add Property</Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     );
 }

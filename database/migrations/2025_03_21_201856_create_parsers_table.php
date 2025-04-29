@@ -14,6 +14,7 @@ return new class extends Migration {
             $table->id();
             $table->unsignedBigInteger('schema_id')->nullable();
             $table->string('name');
+            $table->boolean('required')->default(false)->after('type');
             $table->text('description')->nullable();
             $table->string('type')->default('string');
             $table->jsonb('enum')->nullable();

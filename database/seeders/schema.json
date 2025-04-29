@@ -1,0 +1,44 @@
+{
+    "type": "object",
+    "description": "Candidate Object",
+    "properties": {
+        "name": {
+            "type": "string",
+            "description": "name of the candidate"
+        },
+        "email": {
+            "type": "string",
+            "description": "email of the candidate"
+        },
+        "dob": {
+            "type": "string",
+            "description": "DOB of the candidate in YYYY-MM-DD format"
+        },
+        "phone": {
+            "type": "string",
+            "description": "Phone number"
+        },
+        "secondary_phone": {
+            "type": "string",
+            "description": "Secondary Phone number"
+        },
+        "gender": {
+            "type": "string",
+            "enum": ["Male","Female"],
+            "description": "gender of the candidate"
+        },
+        "experiences": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "title": {
+                        "type": "string",
+                        "description": "Job Title"
+                    }
+                }
+            }
+        }
+    },
+    "additionalProperties": false
+}

@@ -78,10 +78,6 @@ export function JsonSchemaEditor({ initialSchema }: { initialSchema: SchemaItem 
             result.description = prop.description;
         }
 
-        if (prop.default !== undefined) {
-            result.default = prop.default;
-        }
-
         if (prop.type === 'object' && prop.properties) {
             result.properties = {};
             const required: string[] = [];
@@ -170,7 +166,7 @@ export function JsonSchemaEditor({ initialSchema }: { initialSchema: SchemaItem 
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-2">
-                                {Object.values(schema.properties).map((property) => (
+                                {Object.values(schema.properties || []).map((property) => (
                                     <PropertyItem
                                         key={property.id}
                                         openAddPropertyDialog={openAddPropertyDialog}
@@ -180,7 +176,7 @@ export function JsonSchemaEditor({ initialSchema }: { initialSchema: SchemaItem 
                                         path={[]}
                                     />
                                 ))}
-                                {Object.keys(schema.properties).length === 0 && (
+                                {Object.keys(schema.properties || []).length === 0 && (
                                     <p className="text-muted-foreground py-4 text-center">No properties defined. Add a property to get started.</p>
                                 )}
                             </div>

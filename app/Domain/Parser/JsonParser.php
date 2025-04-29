@@ -121,4 +121,59 @@ class JsonParser
             'array' => $handleArray($json, $name, $description),
         };
     }
+
+    public function jsonToSchema(string $key, array $json, int|null $parentId = null, int|null $rootId = null): int
+    {
+        $required    = Arr::get($json, 'required', false);
+        $type        = Arr::get($json, 'type', 'string');
+        $description = Arr::get($json, 'description', '');
+        $enum        = Arr::get($json, 'enum');
+
+        $schema = Schema::query()->create([
+            'name'        => $key,
+            'schema_id'   => $parentId,
+            'description' => $description,
+            'required'    => $required,
+            'type'        => empty($enum) ? $type : 'enum',
+            'enum'        => $enum,
+        ]);
+
+        $handleObject = function (array $object) use ($schema) {
+            $properties = Arr::get($object, 'properties') ?? [];
+
+            foreach ($properties as $key => $property) {
+                $this->jsonToSchema($key, $property, $schema->id);
+            };
+        };
+
+        $handleArray = function (array $json) use ($schema): void {
+            $type = Arr::get($json, 'items.type', 'string');
+
+            # It the array is primitive data types
+            if (!in_array($type, ['array', 'object'])) {
+                $schema->update([
+                    'items.type' => $type,
+                ]);
+
+                return;
+            }
+
+            $properties = Arr::get($json, 'items.properties') ?? [];
+            foreach ($properties as $key => $property) {
+                $this->jsonToSchema($key, $property, $schema->id);
+            };
+        };
+
+        match ($type) {
+            'object' => $handleObject($json),
+            'array' => $handleArray($json),
+            default => null,
+        };
+
+        if (is_null($rootId)) {
+            $rootId = $schema->id;
+        }
+
+        return $rootId;
+    }
 }
