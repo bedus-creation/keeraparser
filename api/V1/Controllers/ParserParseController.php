@@ -45,7 +45,7 @@ class ParserParseController extends Controller
 
         $chat = $action
             ->prepare($request->user(), $chatStoreDto)
-            ->dispatchSync()
+            ->processSync()
             ->execute();
 
         $chat = Chat::query()->with('parser')->findOrFail($chat->id);

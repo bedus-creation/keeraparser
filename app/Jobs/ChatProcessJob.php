@@ -7,6 +7,7 @@ use App\Constants\ChatStatus;
 use App\Models\Chat;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Throwable;
 
 class ChatProcessJob implements ShouldQueue
 {
@@ -19,7 +20,7 @@ class ChatProcessJob implements ShouldQueue
         $action->prepare($this->chatId)->handle();
     }
 
-    public function failed(\Exception $exception): void
+    public function failed(?Throwable $exception): void
     {
         Chat::query()
             ->find($this->chatId)

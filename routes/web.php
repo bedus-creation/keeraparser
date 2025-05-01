@@ -2,8 +2,10 @@
 
 use App\Actions\ChatInitiateAction;
 use App\Data\ChatStoreDto;
+use App\Domain\Parser\JsonParser;
 use App\Filters\ParserFilter;
 use App\Http\Requests\ChatRequest;
+use App\Http\Requests\SchemaUpdateRequest;
 use App\Models\Chat;
 use App\Models\Parser;
 use App\Queries\ParserQuery;
@@ -91,7 +93,10 @@ Route::middleware(['auth', 'verified', 'throttle:keera-api'])->group(function ()
         $user         = auth()->user();
         $chatStoreDto = ChatStoreDto::from($request);
 
-        $chat = $action->prepare($user, $chatStoreDto)->execute();
+        $chat = $action
+            ->prepare($user, $chatStoreDto)
+            ->processSync()
+            ->execute();
 
         return redirect()->to(route('chats.show', $chat->id));
     });
@@ -121,6 +126,16 @@ Route::middleware(['auth', 'verified', 'throttle:keera-api'])->group(function ()
         return redirect()->back();
     });
 
+    Route::put('schemas/{id}', function (SchemaUpdateRequest $request, int $id) {
+        // TODO: authorize the request
+        \App\Models\Schema::query()
+            ->where('id', $id)
+            ->firstOrFail()
+            ->update($request->all());
+
+        return redirect()->back();
+    });
+
     Route::delete('schemas/{id}', function ($id) {
         \App\Models\Schema::query()
             ->where('schema_id', $id)
@@ -142,14 +157,14 @@ Route::middleware(['auth', 'verified', 'throttle:keera-api'])->group(function ()
             ->where('id', $parser->schema_id)
             ->firstOrFail();
 
-        $schemaReplicate = $schema->replicate();
-        $schemaReplicate->save();
+        [$key, $json] = $schema->toArraySchema();
+        $schemaId = (new JsonParser())->jsonToSchema($key, $json);
 
         /** @var Parser $replicateParser */
         $replicateParser             = $parser->replicate();
         $replicateParser->created_at = now();
         $replicateParser->user_id    = auth()->id();
-        $replicateParser->schema_id  = $schemaReplicate->id;
+        $replicateParser->schema_id  = $schemaId;
         $replicateParser->save();
 
         return redirect()->to(route('parsers.edit', $replicateParser->id));

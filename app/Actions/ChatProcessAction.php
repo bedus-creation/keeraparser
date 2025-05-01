@@ -52,10 +52,13 @@ class ChatProcessAction
         ]);
 
         $result = Prism::structured()
-            ->using(Provider::Gemini, 'gemini-2.0-flash')
-            ->withClientOptions(['timeout' => 200])
-            ->withSystemPrompt($parser->system_prompt)
+            ->using(Provider::Gemini, 'gemini-2.5-flash-preview-04-17')
+            ->withClientOptions([
+                'timeout' => 200
+            ])
+            ->usingTemperature(0)
             ->withSchema($schema)
+            ->withSystemPrompt($parser->system_prompt)
             ->withMessages($messages)
             ->generate()
             ->structured;

@@ -8,12 +8,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { PropertyAddModal } from '@/pages/parsers/property-add-modal';
 import { PropertyItem } from '@/pages/parsers/property-item';
-import { JsonSchema, SchemaProperty } from '@/pages/parsers/type';
-import { Plus, Save } from 'lucide-react';
+import { SchemaItem } from '@/pages/parsers/type';
+import { Plus } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
-export function JsonSchemaEditor({ initialSchema }: { initialSchema: JsonSchema }) {
-    const [schema, setSchema] = useState<JsonSchema>(initialSchema);
+export function JsonSchemaEditor({ initialSchema }: { initialSchema: SchemaItem }) {
+    const [schema, setSchema] = useState<SchemaItem>(initialSchema);
     useEffect(() => {
         setSchema(initialSchema); // Update the state whenever the initialSchema prop changes
     }, [initialSchema]);
@@ -63,17 +63,19 @@ export function JsonSchemaEditor({ initialSchema }: { initialSchema: JsonSchema 
         return JSON.stringify(result, null, 2);
     };
 
-    const convertPropertyToJsonSchema = (prop: SchemaProperty): any => {
-        const result: any= {
+    const convertPropertyToJsonSchema = (prop: SchemaItem): any => {
+        const result: {
+            type: typeof prop.type;
+            description?: typeof prop.description;
+            default?: typeof prop.default;
+            properties?: typeof prop.properties;
+            required?: Array<string>;
+        } = {
             type: prop.type,
         };
 
         if (prop.description) {
             result.description = prop.description;
-        }
-
-        if (prop.default !== undefined) {
-            result.default = prop.default;
         }
 
         if (prop.type === 'object' && prop.properties) {
@@ -164,7 +166,7 @@ export function JsonSchemaEditor({ initialSchema }: { initialSchema: JsonSchema 
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-2">
-                                {Object.values(schema.properties).map((property) => (
+                                {Object.values(schema.properties || []).map((property) => (
                                     <PropertyItem
                                         key={property.id}
                                         openAddPropertyDialog={openAddPropertyDialog}
@@ -174,7 +176,7 @@ export function JsonSchemaEditor({ initialSchema }: { initialSchema: JsonSchema 
                                         path={[]}
                                     />
                                 ))}
-                                {Object.keys(schema.properties).length === 0 && (
+                                {Object.keys(schema.properties || []).length === 0 && (
                                     <p className="text-muted-foreground py-4 text-center">No properties defined. Add a property to get started.</p>
                                 )}
                             </div>

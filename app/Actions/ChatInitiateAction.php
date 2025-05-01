@@ -18,11 +18,11 @@ class ChatInitiateAction
 
     protected ChatStoreDto $request;
 
-    protected bool $dispatchSync = false;
+    protected bool $processSync = false;
 
-    public function dispatchSync(): self
+    public function processSync(): self
     {
-        $this->dispatchSync = true;
+        $this->processSync = true;
 
         return $this;
     }
@@ -80,7 +80,7 @@ class ChatInitiateAction
             $lock->release();
         }
 
-        $this->dispatchSync
+        $this->processSync
             ? ChatProcessJob::dispatchSync($chat->id)
             : ChatProcessJob::dispatch($chat->id);
 
