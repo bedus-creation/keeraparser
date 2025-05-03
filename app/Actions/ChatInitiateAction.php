@@ -65,7 +65,6 @@ class ChatInitiateAction
             /** @var Chat $chat */
             $chat = Chat::query()->create([
                 'user_id'     => $this->user->id,
-                'parser_type' => 'resume',
                 'parser_id'   => $this->request->parserId,
             ]);
 
