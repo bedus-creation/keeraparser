@@ -6,8 +6,10 @@ use App\Domain\Parser\JsonParser;
 use App\Filters\ParserFilter;
 use App\Http\Requests\ChatRequest;
 use App\Http\Requests\SchemaUpdateRequest;
+use App\Http\Resources\Token;
 use App\Models\Chat;
 use App\Models\Parser;
+use App\Models\Schema;
 use App\Queries\ParserQuery;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -70,7 +72,6 @@ Route::middleware(['auth', 'verified', 'throttle:keera-api'])->group(function ()
         return Inertia::render('dashboard');
     })->name('dashboard');
 
-
     Route::get('chats', function () {
         $parsers = ParserQuery::getParserList();
 
@@ -119,8 +120,8 @@ Route::middleware(['auth', 'verified', 'throttle:keera-api'])->group(function ()
         ]);
     })->name('histories.index');
 
-    Route::post('schemas', function (Request $request) {
-        \App\Models\Schema::query()
+    Route::post('schemas', function (\App\Http\Requests\SchemaCreateRequest $request) {
+        Schema::query()
             ->create($request->all());
 
         return redirect()->back();
@@ -128,7 +129,7 @@ Route::middleware(['auth', 'verified', 'throttle:keera-api'])->group(function ()
 
     Route::put('schemas/{id}', function (SchemaUpdateRequest $request, int $id) {
         // TODO: authorize the request
-        \App\Models\Schema::query()
+        Schema::query()
             ->where('id', $id)
             ->firstOrFail()
             ->update($request->all());
@@ -137,11 +138,11 @@ Route::middleware(['auth', 'verified', 'throttle:keera-api'])->group(function ()
     });
 
     Route::delete('schemas/{id}', function ($id) {
-        \App\Models\Schema::query()
+        Schema::query()
             ->where('schema_id', $id)
             ->delete();
 
-        \App\Models\Schema::query()
+        Schema::query()
             ->where('id', $id)
             ->delete();
 
@@ -153,7 +154,7 @@ Route::middleware(['auth', 'verified', 'throttle:keera-api'])->group(function ()
             ->where('id', $id)
             ->firstOrFail();
 
-        $schema = \App\Models\Schema::query()
+        $schema = Schema::query()
             ->where('id', $parser->schema_id)
             ->firstOrFail();
 
@@ -177,9 +178,11 @@ Route::middleware(['auth', 'verified', 'throttle:keera-api'])->group(function ()
             ->firstOrFail();
 
         $schema = $parser->schema->toArraySchema();
+        $json   = $parser->schema->toJsonSchema();
 
         return Inertia::render('parsers/edit', [
             'parser' => $parser,
+            'json'   => $json,
             'schema' => [
                 'title'      => $schema[0],
                 'properties' => [],
@@ -225,7 +228,7 @@ Route::middleware(['auth', 'verified', 'throttle:keera-api'])->group(function ()
         $tokens = auth()->user()->tokens;
 
         return Inertia::render('api-keys/index', [
-            'apiKeys' => \App\Http\Resources\Token::collection($tokens),
+            'apiKeys' => Token::collection($tokens),
         ]);
     })->name('api-keys.index');
 });

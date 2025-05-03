@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class SchemaUpdateRequest extends FormRequest
+class SchemaCreateRequest extends FormRequest
 {
     public function prepareForValidation(): void
     {

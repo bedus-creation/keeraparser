@@ -21,7 +21,7 @@ export default function Parsers({ params, parsers, auth }: { params: { search: s
         },
     });
 
-    const setFilter = (key: string, value: any) => {
+    const setFilter = (key: string, value: string) => {
         setData({ filter: { q: value } });
     };
 
