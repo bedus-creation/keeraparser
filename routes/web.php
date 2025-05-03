@@ -171,6 +171,17 @@ Route::middleware(['auth', 'verified', 'throttle:keera-api'])->group(function ()
         return redirect()->to(route('parsers.edit', $replicateParser->id));
     });
 
+    Route::put('parsers/{id}', function (Request $request,int $id) {
+        $parser = Parser::query()
+            ->with('schema')
+            ->where('id', $id)
+            ->firstOrFail();
+
+        $parser->update($request->all());
+
+        return redirect()->back();
+    });
+
     Route::get('parsers/{id}/edit', function ($id) {
         $parser = Parser::query()
             ->with('schema')

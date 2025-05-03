@@ -1,9 +1,17 @@
-import { Button } from '@/components/ui/button';
+import { buttonVariants } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import { ChatHistory } from '@/pages/histories/types';
+import { Link } from '@inertiajs/react';
 import { ColumnDef } from '@tanstack/react-table';
-import { ChevronRight } from 'lucide-react';
+import { Eye } from 'lucide-react';
 
-export const columns: ColumnDef<ChatHistory>[] = [
+export type KeeraColumnDef<TData, TValue = string | number | null | undefined | boolean> = ColumnDef<TData, TValue> & {
+    meta?: {
+        className?: string;
+    };
+};
+
+export const columns: KeeraColumnDef<ChatHistory>[] = [
     {
         accessorKey: 'id',
         header: 'ID',
@@ -28,12 +36,25 @@ export const columns: ColumnDef<ChatHistory>[] = [
 
     {
         header: 'Action',
-        cell: () => {
+        cell: ({ row }) => {
+            const id = row.original.id;
+
             return (
-                <Button variant="outline" size="icon">
-                    <ChevronRight />
-                </Button>
+                <Link
+                    href={`/chats/${id}`}
+                    className={cn(
+                        buttonVariants({
+                            size: 'sm',
+                            variant: 'outline',
+                        }),
+                    )}
+                >
+                    <Eye />
+                </Link>
             );
+        },
+        meta: {
+            className: 'text-center',
         },
     },
 ];

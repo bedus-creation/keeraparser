@@ -1,9 +1,16 @@
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { type BreadcrumbItem as BreadcrumbItemType } from '@/types';
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 
 export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: BreadcrumbItemType[] }) {
+    const auth = (usePage().props).auth as {
+        plan: {
+            on_trail: false;
+            name: string;
+        }
+    };
+
     return (
         <header className="border-sidebar-border/50 flex h-16 shrink-0 items-center gap-2 border-b px-6 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 md:px-4">
             <div className="flex w-full items-center gap-2">
@@ -11,7 +18,7 @@ export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: Breadcrum
                 <Breadcrumbs breadcrumbs={breadcrumbs} />
 
                 <div className="flex flex-1 justify-end">
-                    <div className="absolute top-2 right-2 z-40 flex items-center justify-center">
+                    { auth.plan.on_trail && <div className="absolute top-2 right-2 z-40 flex items-center justify-center">
                         <Link
                             href="/#pricing"
                             className="inline-flex h-12 cursor-default items-center justify-center gap-1.5 rounded-xl border border-red-500 bg-white px-1.5 py-1 text-red-500 transition-colors hover:bg-red-500/5 dark:border-red-400 dark:bg-[--main-dark-color] dark:text-red-400 dark:hover:bg-red-500/10">
@@ -40,7 +47,7 @@ export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: Breadcrum
                             </span>
                             <div className="absolute top-3.5 left-2 h-6 w-6 animate-ping rounded-full bg-red-500" aria-hidden="true"></div>
                         </Link>
-                    </div>
+                    </div> }
                 </div>
             </div>
         </header>
