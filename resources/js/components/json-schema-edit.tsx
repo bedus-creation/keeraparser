@@ -2,17 +2,14 @@
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Textarea } from '@/components/ui/textarea';
+import { JSONPreview } from '@/pages/parsers/json-preview';
 import { PropertyAddModal } from '@/pages/parsers/property-add-modal';
 import { PropertyItem } from '@/pages/parsers/property-item';
 import { SchemaItem } from '@/pages/parsers/type';
 import { Plus } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
-export function JsonSchemaEditor({ initialSchema }: { initialSchema: SchemaItem }) {
+export function JsonSchemaEditor({ initialSchema, json }: { initialSchema: SchemaItem; json: Record<string, string | number | null> }) {
     const [schema, setSchema] = useState<SchemaItem>(initialSchema);
     useEffect(() => {
         setSchema(initialSchema); // Update the state whenever the initialSchema prop changes
@@ -20,9 +17,12 @@ export function JsonSchemaEditor({ initialSchema }: { initialSchema: SchemaItem 
 
     const [expandedProps, setExpandedProps] = useState<Record<string, boolean>>({});
 
-    const [currentPropertyState, setCurrentPropertyState] = useState<Record<string, any>>({
+    const [currentPropertyState, setCurrentPropertyState] = useState<{
+        open: boolean;
+        schema: SchemaItem | null;
+    }>({
         open: false,
-        schema_id: '',
+        schema: null,
     });
 
     const setPropertyDialog = (open: boolean) => {
@@ -39,88 +39,15 @@ export function JsonSchemaEditor({ initialSchema }: { initialSchema: SchemaItem 
         }));
     };
 
-    const openAddPropertyDialog = (schema_id: number) => {
+    const openAddPropertyDialog = (schema: SchemaItem) => {
         setCurrentPropertyState({
-            schema_id: schema_id,
+            schema: schema,
             open: true,
         });
     };
 
     const renderSchemaToJson = (): string => {
-        const result: any = {
-            title: schema.title,
-            description: schema.description,
-            type: 'object',
-            properties: {},
-            required: schema.required,
-        };
-
-        // Convert our internal schema format to standard JSON Schema
-        Object.entries(schema.properties).forEach(([key, prop]) => {
-            result.properties[key] = convertPropertyToJsonSchema(prop);
-        });
-
-        return JSON.stringify(result, null, 2);
-    };
-
-    const convertPropertyToJsonSchema = (prop: SchemaItem): any => {
-        const result: {
-            type: typeof prop.type;
-            description?: typeof prop.description;
-            default?: typeof prop.default;
-            properties?: typeof prop.properties;
-            required?: Array<string>;
-        } = {
-            type: prop.type,
-        };
-
-        if (prop.description) {
-            result.description = prop.description;
-        }
-
-        if (prop.type === 'object' && prop.properties) {
-            result.properties = {};
-            const required: string[] = [];
-
-            Object.entries(prop.properties).forEach(([key, nestedProp]) => {
-                result.properties[key] = convertPropertyToJsonSchema(nestedProp);
-                if (nestedProp.required) {
-                    required.push(key);
-                }
-            });
-
-            if (required.length > 0) {
-                result.required = required;
-            }
-        }
-
-        if (prop.type === 'array' && prop.items) {
-            // If array items are objects with properties, handle them specially
-            if (prop.items.type === 'object' && prop.items.properties) {
-                result.items = {
-                    type: 'object',
-                    properties: {},
-                };
-
-                const required: string[] = [];
-
-                Object.entries(prop.items.properties).forEach(([key, nestedProp]) => {
-                    result.items.properties[key] = convertPropertyToJsonSchema(nestedProp);
-                    if (nestedProp.required) {
-                        required.push(key);
-                    }
-                });
-
-                if (required.length > 0) {
-                    result.items.required = required;
-                }
-            } else {
-                // Simple array items
-                result.items = convertPropertyToJsonSchema(prop.items);
-            }
-        }
-
-        return result;
+        return JSON.stringify(json, null, 2);
     };
 
     if (!schema) {
@@ -128,76 +55,39 @@ export function JsonSchemaEditor({ initialSchema }: { initialSchema: SchemaItem 
     }
 
     return (
-        <div className="space-y-6">
+        <div className="">
             <Card>
-                <CardHeader>
-                    <CardTitle>Schema Information</CardTitle>
+                <CardHeader className="flex flex-row items-center justify-between">
+                    <CardTitle>Properties</CardTitle>
+                    <div className="flex gap-2">
+                        <JSONPreview json={renderSchemaToJson()} />
+                        <Button onClick={() => openAddPropertyDialog(schema)}>
+                            <Plus className="mr-2 h-4 w-4" /> Add Property
+                        </Button>
+                    </div>
                 </CardHeader>
                 <CardContent>
-                    <div className="grid gap-4">
-                        <div className="grid gap-2">
-                            <Label htmlFor="title">Title</Label>
-                            <Input id="title" value={schema.title} onChange={(e) => setSchema({ ...schema, title: e.target.value })} />
-                        </div>
-                        <div className="grid gap-2">
-                            <Label htmlFor="description">Description</Label>
-                            <Textarea
-                                id="description"
-                                value={schema.description}
-                                onChange={(e) => setSchema({ ...schema, description: e.target.value })}
+                    <div className="space-y-2">
+                        {Object.values(schema.properties || []).map((property) => (
+                            <PropertyItem
+                                key={property.id}
+                                openAddPropertyDialog={openAddPropertyDialog}
+                                expandedProps={expandedProps}
+                                toggleExpand={toggleExpand}
+                                property={property}
+                                path={[property.path]}
                             />
-                        </div>
+                        ))}
+                        {Object.keys(schema.properties || []).length === 0 && (
+                            <p className="text-muted-foreground py-4 text-center">No properties defined. Add a property to get started.</p>
+                        )}
                     </div>
                 </CardContent>
             </Card>
 
-            <Tabs defaultValue="visual">
-                <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="visual">Visual Editor</TabsTrigger>
-                    <TabsTrigger value="json">JSON</TabsTrigger>
-                </TabsList>
-                <TabsContent value="visual" className="space-y-4">
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between">
-                            <CardTitle>Properties</CardTitle>
-                            <Button onClick={() => openAddPropertyDialog(schema.id)}>
-                                <Plus className="mr-2 h-4 w-4" /> Add Property
-                            </Button>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="space-y-2">
-                                {Object.values(schema.properties || []).map((property) => (
-                                    <PropertyItem
-                                        key={property.id}
-                                        openAddPropertyDialog={openAddPropertyDialog}
-                                        expandedProps={expandedProps}
-                                        toggleExpand={toggleExpand}
-                                        property={property}
-                                        path={[]}
-                                    />
-                                ))}
-                                {Object.keys(schema.properties || []).length === 0 && (
-                                    <p className="text-muted-foreground py-4 text-center">No properties defined. Add a property to get started.</p>
-                                )}
-                            </div>
-                        </CardContent>
-                    </Card>
-                </TabsContent>
-                <TabsContent value="json">
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between">
-                            <CardTitle>JSON Schema</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <pre className="bg-muted max-h-[500px] overflow-auto rounded-md p-4">
-                                <code>{renderSchemaToJson()}</code>
-                            </pre>
-                        </CardContent>
-                    </Card>
-                </TabsContent>
-            </Tabs>
-
-            <PropertyAddModal open={currentPropertyState.open} schema_id={currentPropertyState.schema_id} onClose={setPropertyDialog} />
+            {currentPropertyState.schema && (
+                <PropertyAddModal schema={currentPropertyState.schema} open={currentPropertyState.open} onClose={setPropertyDialog} />
+            )}
         </div>
     );
 }

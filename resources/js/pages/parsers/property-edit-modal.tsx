@@ -11,33 +11,23 @@ import { Trash2 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
-export function PropertyEditModal({
-    schema,
-    children,
-}: {
-    schema: SchemaItem;
-    children?: (props: { onClick: () => void }) => React.ReactNode;
-}) {
+export function PropertyEditModal({ schema, children }: { schema: SchemaItem; children?: (props: { onClick: () => void }) => React.ReactNode }) {
     const [open, setOpen] = useState<boolean>(false);
 
-    const { data, setData, put, reset } = useForm<SchemaFormType>({
-        parent_id: schema.parent_id,
-        name: schema.name,
-        type: 'string',
-        description: schema.description,
-        required: schema.required,
-        enum: schema.enum,
-    });
+    const { data, setData, put, reset } = useForm<SchemaFormType>();
 
     useEffect(() => {
         setData((previousData) => ({
             ...previousData,
-            schema_id: schema.id,
+            parent_id: schema.parent_id,
             name: schema.name,
             type: schema.type,
             description: schema.description,
             required: schema.required,
             enum: schema.enum,
+            items: {
+                type: schema.items?.type
+            },
         }));
     }, [schema, setData]);
 
@@ -53,7 +43,7 @@ export function PropertyEditModal({
             onSuccess: () => {
                 router.reload();
                 setOpen(false);
-                toast.success('Property Updated Successfully');
+                toast.success('Property Updated Successfully.');
                 reset();
             },
             onError: (error) => {
@@ -194,12 +184,11 @@ export function PropertyEditModal({
                             <div className="grid gap-2">
                                 <Label>Array Items Type</Label>
                                 <Select
-                                    value={data.items?.type || 'string'}
+                                    value={data.items?.type || ('string' as PropertyType)}
                                     onValueChange={(value) =>
                                         setData({
                                             ...data,
                                             items: {
-                                                ...data.items,
                                                 type: value,
                                             },
                                         })

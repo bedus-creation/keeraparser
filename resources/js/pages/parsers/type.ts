@@ -10,18 +10,22 @@ export interface Parser {
 
 export interface SchemaItem {
     id: number;
-    parent_id?: number;
+    parent_id?: number | null;
     path: string;
     name: string;
     description?: string;
-    type?: PropertyType | null;
+    type?: PropertyType | string;
     enum?: string[] | null;
     required?: boolean;
     properties?: Record<string, SchemaItem>;
     items?: SchemaItem;
 }
 
-export type SchemaFormType = Omit<SchemaItem, 'id' | 'path' | 'properties' | 'items'>;
+export type SchemaFormType = Omit<SchemaItem, 'id' | 'path' | 'properties' | 'items'> & {
+    items?: {
+        type?: PropertyType | string;
+    } | null;
+};
 
 export type PropertyType = 'string' | 'number' | 'boolean' | 'enum' | 'object' | 'array' | 'null' | 'integer';
 

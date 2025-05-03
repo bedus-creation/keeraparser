@@ -19,6 +19,8 @@ return new class extends Migration {
             $table->string('type')->default('string');
             $table->jsonb('enum')->nullable();
             $table->jsonb('items')->nullable();
+
+            $table->softDeletes();
             $table->timestamps();
         });
 
@@ -30,6 +32,8 @@ return new class extends Migration {
             $table->foreignId('schema_id')->constrained('schema');
             $table->string('type')->default('default');
             $table->foreignId('user_id')->nullable()->constrained('users');
+
+            $table->softDeletes();
             $table->timestamps();
         });
     }

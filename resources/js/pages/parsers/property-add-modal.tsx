@@ -5,57 +5,42 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { PropertyType } from '@/pages/parsers/type';
-import { InertiaFormProps, router, useForm } from '@inertiajs/react';
+import { PROPERTY_DEFAULT_FORM } from '@/pages/parsers/constant';
+import { PropertyType, SchemaFormType, SchemaItem } from '@/pages/parsers/type';
+import { router, useForm } from '@inertiajs/react';
 import { Trash2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
+import { toast } from 'sonner';
 
-export function PropertyAddModal({ open, schema_id, onClose }: { open: boolean; schema_id: number; onClose: (open: boolean) => void }) {
-    const [isArrayItemProperty, setIsArrayItemProperty] = useState(false);
-    const currentPath = '';
-
-    const {
-        data,
-        setData,
-        post,
-        processing,
-        errors
-    }: InertiaFormProps<{
-        schema_id: number;
-        name: string;
-        type: string;
-        description: string;
-        required: boolean;
-        items?: {
-            type: PropertyType;
-        }
-        enum?: string[];
-    }> = useForm({
-        schema_id: schema_id,
-        name: '',
-        type: 'string',
-        description: '',
-        required: false,
-        items: null,
-        enum: null
-    });
+export function PropertyAddModal({ open, schema, onClose }: { open: boolean; schema: SchemaItem; onClose: (open: boolean) => void }) {
+    const { data, setData, post, reset, processing } = useForm<SchemaFormType>(PROPERTY_DEFAULT_FORM);
 
     useEffect(() => {
         setData((previousData) => ({
             ...previousData,
-            schema_id
+            parent_id: schema.id,
         }));
-    }, [schema_id, setData]);
+    }, [schema, setData]);
 
-    const addProperty = (event) => {
+    const addProperty = (event: React.MouseEvent<HTMLButtonElement>) => {
         event.preventDefault();
 
+        if (processing){
+            return;
+        }
+
         post('/schemas', {
+            preserveScroll: true,
             onSuccess: () => {
                 router.reload();
+                reset();
+                toast.success('Property Added Successfully.');
 
                 onClose(false);
-            }
+            },
+            onError: (error) => {
+                toast.success(error.message);
+            },
         });
     };
 
@@ -68,7 +53,7 @@ export function PropertyAddModal({ open, schema_id, onClose }: { open: boolean; 
 
             return {
                 ...prev,
-                enum: [...currentEnum, value]
+                enum: [...currentEnum, value],
             };
         });
     };
@@ -79,7 +64,7 @@ export function PropertyAddModal({ open, schema_id, onClose }: { open: boolean; 
 
             return {
                 ...prev,
-                enum: prev.enum.filter((v) => v !== value)
+                enum: prev.enum.filter((v) => v !== value),
             };
         });
     };
@@ -90,14 +75,8 @@ export function PropertyAddModal({ open, schema_id, onClose }: { open: boolean; 
         <Dialog open={open} onOpenChange={onClose}>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>{isArrayItemProperty ? 'Add Property to Array Item' : 'Add New Property'}</DialogTitle>
-                    <DialogDescription>
-                        {isArrayItemProperty
-                            ? `Adding property to items in ${currentPath.join('.')}`
-                            : currentPath.length > 0
-                                ? `Adding property to ${currentPath.join('.')}`
-                                : 'Adding property to root object'}
-                    </DialogDescription>
+                    <DialogTitle>Add New Property</DialogTitle>
+                    <DialogDescription>{`Adding property to ${schema.path || 'candidate'} path`}</DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
                     <div className="grid gap-2">
@@ -157,19 +136,11 @@ export function PropertyAddModal({ open, schema_id, onClose }: { open: boolean; 
                     )}
 
                     {data.type === 'enum' && data.enum?.length && data.enum?.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-2">
+                        <div className="mt-2 flex flex-wrap gap-1">
                             {data.enum?.map((value) => (
-                                <div
-                                    key={value}
-                                    className="flex items-center gap-1 bg-blue-50 text-blue-800 px-2 py-1 rounded text-xs">
+                                <div key={value} className="flex items-center gap-1 rounded bg-blue-50 px-2 py-1 text-xs text-blue-800">
                                     {value}
-                                    <Button
-                                        type="button"
-                                        variant="ghost"
-                                        size="sm"
-                                        className="h-4 w-4 p-0"
-                                        onClick={() => removeEnumValue(value)}
-                                    >
+                                    <Button type="button" variant="ghost" size="sm" className="h-4 w-4 p-0" onClick={() => removeEnumValue(value)}>
                                         <Trash2 className="h-3 w-3" />
                                     </Button>
                                 </div>
@@ -206,7 +177,7 @@ export function PropertyAddModal({ open, schema_id, onClose }: { open: boolean; 
                                         items: {
                                             ...data.items,
                                             type: value,
-                                        }
+                                        },
                                     })
                                 }
                             >

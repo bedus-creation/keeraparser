@@ -11,24 +11,24 @@ export function PropertyItem({
     property,
     path,
 }: {
-    openAddPropertyDialog: (schema_id: number) => void;
+    openAddPropertyDialog: (schema: SchemaItem) => void;
     expandedProps: Record<string, boolean>;
     toggleExpand: (path: string) => void;
     property: SchemaItem;
     path: string[];
 }) {
     const fullPath = [...path, property.name].join('.');
-    const isExpanded = expandedProps[fullPath] || false;
+    const isExpanded = expandedProps[fullPath] || true;
     const hasChildren =
         (property.type === 'object' && property.properties && Object.keys(property.properties).length > 0) ||
-        (property.type === 'array' && property.items);
+        (property.type === 'array' && property.items?.type == 'object');
 
     const removeProperty = () => {
         router.delete(`/schemas/${property.id}`, {});
     };
 
     return (
-        <div key={fullPath} className="mb-2 rounded-md border">
+        <div key={property.path} className="mb-2 rounded-md border">
             <div
                 className="hover:bg-muted/50 flex cursor-pointer items-center justify-between p-3"
                 onClick={() => hasChildren && toggleExpand(fullPath)}
@@ -40,9 +40,12 @@ export function PropertyItem({
                         </button>
                     )}
                     <span className="font-medium">{property.name}</span>
-                    <span className="bg-muted text-muted-foreground rounded px-2 py-0.5 text-xs">{property.type}</span>
-                    {property.description && <p className="text-muted-foreground text-xs">{property.description}</p>}
+                    <span className="bg-muted text-muted-foreground rounded px-2 py-0.5 text-xs">
+                        {property.type}
+                        {['array'].includes(property.type || 'string') && ` of ${property.items?.type || 'string'}`}
+                    </span>
                     {property.required && <span className="rounded bg-red-100 px-2 py-0.5 text-xs text-red-800">required</span>}
+                    {property.description && <p className="text-muted-foreground text-xs">{property.description}</p>}
                 </div>
                 <div className="flex items-center gap-2">
                     {property.type === 'object' && (
@@ -51,7 +54,7 @@ export function PropertyItem({
                             size="sm"
                             onClick={(e) => {
                                 e.stopPropagation();
-                                openAddPropertyDialog(property.id);
+                                openAddPropertyDialog(property);
                             }}
                         >
                             <Plus className="h-4 w-4" />
@@ -84,66 +87,64 @@ export function PropertyItem({
                 </div>
             </div>
 
-            {isExpanded && (
+            {isExpanded && property.type === 'object' && property.properties && (
                 <div className="border-t p-3 pt-0">
-                    {property.type === 'object' && property.properties && (
-                        <div className="mt-2 pl-4">
-                            {Object.values(property.properties).map((prop) => (
-                                <PropertyItem
-                                    openAddPropertyDialog={openAddPropertyDialog}
-                                    expandedProps={expandedProps}
-                                    toggleExpand={toggleExpand}
-                                    property={prop}
-                                    path={[...path, property.name]}
-                                />
-                            ))}
-                            {Object.keys(property.properties).length === 0 && <p className="text-muted-foreground text-sm italic">No properties</p>}
+                    <div className="mt-2 pl-4">
+                        {Object.values(property.properties).map((prop) => (
+                            <PropertyItem
+                                openAddPropertyDialog={openAddPropertyDialog}
+                                expandedProps={expandedProps}
+                                toggleExpand={toggleExpand}
+                                property={prop}
+                                path={[...path, property.name]}
+                            />
+                        ))}
+                        {Object.keys(property.properties).length === 0 && <p className="text-muted-foreground text-sm italic">No properties</p>}
+                    </div>
+                </div>
+            )}
+
+            {isExpanded && property.type === 'array' && property.items?.type === 'object' && (
+                <div className="border-t p-3 pt-0">
+                    <div className="mt-2 pl-4">
+                        <div className="mb-2 flex items-center justify-between">
+                            <span className="bg-muted text-muted-foreground rounded px-2 py-0.5 text-xs">{property.items.type}</span>
+                            {property.items.description && <p className="text-muted-foreground text-xs">{property.items.description}</p>}
+                            {property.items.type === 'object' && (
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        openAddPropertyDialog(property);
+                                    }}
+                                >
+                                    <Plus className="h-4 w-4" /> Add Property
+                                </Button>
+                            )}
                         </div>
-                    )}
 
-                    {property.type === 'array' && property.items && (
-                        <div className="mt-2 pl-4">
-                            <div className="rounded-md border p-2">
-                                <div className="mb-2 flex items-center justify-between">
-                                    <span className="bg-muted text-muted-foreground rounded px-2 py-0.5 text-xs">{property.items.type}</span>
-                                    {property.items.description && <p className="text-muted-foreground text-xs">{property.items.description}</p>}
-                                    {property.items.type === 'object' && (
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                openAddPropertyDialog(property.id);
-                                            }}
-                                        >
-                                            <Plus className="h-4 w-4" /> Add Property
-                                        </Button>
-                                    )}
-                                </div>
-
-                                {property.items.type === 'object' && property.items.properties && (
-                                    <div>
-                                        {Object.keys(property.items.properties).length > 0 ? (
-                                            <div className="pl-2">
-                                                {Object.values(property.items.properties).map((itemProp) => (
-                                                    <PropertyItem
-                                                        key={itemProp.id}
-                                                        openAddPropertyDialog={openAddPropertyDialog}
-                                                        expandedProps={expandedProps}
-                                                        toggleExpand={toggleExpand}
-                                                        property={itemProp}
-                                                        path={[...path, itemProp.name]}
-                                                    />
-                                                ))}
-                                            </div>
-                                        ) : (
-                                            <p className="text-muted-foreground text-sm italic">No properties defined for array items</p>
-                                        )}
+                        {property.items.type === 'object' && property.items.properties && (
+                            <div>
+                                {Object.keys(property.items.properties).length > 0 ? (
+                                    <div className="pl-2">
+                                        {Object.values(property.items.properties).map((itemProp) => (
+                                            <PropertyItem
+                                                key={itemProp.id}
+                                                openAddPropertyDialog={openAddPropertyDialog}
+                                                expandedProps={expandedProps}
+                                                toggleExpand={toggleExpand}
+                                                property={itemProp}
+                                                path={[...path, itemProp.name]}
+                                            />
+                                        ))}
                                     </div>
+                                ) : (
+                                    <p className="text-muted-foreground text-sm italic">No properties defined for array items</p>
                                 )}
                             </div>
-                        </div>
-                    )}
+                        )}
+                    </div>
                 </div>
             )}
         </div>

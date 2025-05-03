@@ -1,10 +1,7 @@
-'use client';
-
 import { Card } from '@/components/ui/card';
-import { useState } from 'react';
 
 interface ResultsViewerProps {
-    results: any;
+    results: Record<string, string | number | boolean | null>;
 }
 
 export function ResultsViewer({ results }: ResultsViewerProps) {

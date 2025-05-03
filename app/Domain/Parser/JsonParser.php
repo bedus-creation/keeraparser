@@ -62,7 +62,7 @@ class JsonParser
 
     public function arrayToSchema(array $json)
     {
-        $type = Arr::get($json, 'type', 'string');
+        $type = Arr::get($json, 'type') ?? 'null';
 
         $handleObject = function (array $object) {
             $properties = Arr::get($object, 'properties') ?? [];
@@ -95,7 +95,7 @@ class JsonParser
                     : $this->arrayToSchema([
                         'name'        => '',
                         'description' => '',
-                        'type'        => Arr::get($json, 'items.type'),
+                        'type'        => Arr::get($json, 'items.type', 'string'),
                     ]),
             );
         };
