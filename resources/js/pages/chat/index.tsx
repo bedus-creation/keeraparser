@@ -1,11 +1,19 @@
 import { Playground } from '@/components/playground';
 import AppLayout from '@/layouts/app-layout';
 import { Chat as ChatType, ParserList } from '@/pages/chat/types';
+import type { BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
+
+const breadcrumbs: BreadcrumbItem[] = [
+    {
+        title: 'Chat',
+        href: '/chats',
+    },
+];
 
 export default function Chat({ parsers, chat }: { chat?: ChatType, parsers: ParserList[] }) {
     return (
-        <AppLayout>
+        <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Keera document Parser" />
 
             <main className="container mx-auto px-4 py-6 md:px-6">

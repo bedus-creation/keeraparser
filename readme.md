@@ -25,6 +25,8 @@ Run the setup script
 
 add environment files:
 ```dotenv
+GEMINI_API_KEY=
+
 REDIS_CLIENT=phpredis
 REDIS_HOST=127.0.0.1
 REDIS_PASSWORD=null
