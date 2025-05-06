@@ -274,7 +274,7 @@ export default function Index() {
                                             </li>
                                             <li className="flex items-center">
                                                 <CheckCircle className="text-primary mr-2 h-4 w-4" />
-                                                <span>Email Support</span>
+                                                <span>Priority support</span>
                                             </li>
                                         </ul>
                                     </CardContent>
@@ -307,11 +307,11 @@ export default function Index() {
                                             </li>
                                             <li className="flex items-center">
                                                 <CheckCircle className="text-primary mr-2 h-4 w-4" />
-                                                <span>Other PDF data extract supports</span>
+                                                <span>Priority support</span>
                                             </li>
                                             <li className="flex items-center">
                                                 <CheckCircle className="text-primary mr-2 h-4 w-4" />
-                                                <span>Email & Live Support</span>
+                                                <span>Other PDF data extract supports</span>
                                             </li>
                                         </ul>
                                     </CardContent>
