@@ -34,10 +34,10 @@ class Chat extends Model implements HasMedia
     public function casts(): array
     {
         return [
-            'status'                => ChatStatus::class,
-            'payload'               => 'array',
+            'status' => ChatStatus::class,
+            'payload' => 'array',
             'response_completed_at' => 'datetime',
-            'response'              => 'array',
+            'response' => 'array',
         ];
     }
 

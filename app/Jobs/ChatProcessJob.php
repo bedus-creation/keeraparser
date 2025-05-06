@@ -25,9 +25,9 @@ class ChatProcessJob implements ShouldQueue
         Chat::query()
             ->find($this->chatId)
             ?->update([
-                'status'                => ChatStatus::FAILED,
+                'status' => ChatStatus::FAILED,
                 'response_completed_at' => now(),
-                'response'              => $exception->getMessage()
+                'response' => $exception->getMessage(),
             ]);
     }
 }

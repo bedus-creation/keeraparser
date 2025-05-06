@@ -6,9 +6,7 @@ use App\Http\Controllers\Controller;
 use Dedoc\Scramble\Attributes\Group;
 
 #[Group('Parsers')]
-class ParserController  extends Controller
+class ParserController extends Controller
 {
-    public function index(){
-
-    }
+    public function index() {}
 }

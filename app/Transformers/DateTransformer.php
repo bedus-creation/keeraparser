@@ -17,7 +17,7 @@ class DateTransformer implements Transformer
 
         return [
             'formatted' => Carbon::parse($value)->format('Y-m-d'),
-            'diff'      => $diff,
+            'diff' => $diff,
         ];
     }
 }

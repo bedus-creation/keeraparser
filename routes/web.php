@@ -44,9 +44,9 @@ Route::middleware(['auth', 'verified', 'throttle:keera-api'])->group(function ()
 
         return inertia('payments/success', [
             'payment' => [
-                'created_at'   => Carbon::parse($session->created)->format('Y-m-d'),
-                'plan'         => $plan,
-                'total_amount' => \Illuminate\Support\Number::currency($session->amount_total / 100)
+                'created_at' => Carbon::parse($session->created)->format('Y-m-d'),
+                'plan' => $plan,
+                'total_amount' => \Illuminate\Support\Number::currency($session->amount_total / 100),
             ],
         ]);
     })->name('billing.stripe.success');
@@ -59,14 +59,13 @@ Route::middleware(['auth', 'verified', 'throttle:keera-api'])->group(function ()
         return request()->user()
             ->newSubscription($plan, $planPrice['stripe_product_price'])
             ->checkout([
-                'success_url' => route('billing.stripe.success')."?session_id={CHECKOUT_SESSION_ID}",
-                'cancel_url'  => route('billing.stripe.success'),
-                'metadata'    => [
+                'success_url' => route('billing.stripe.success').'?session_id={CHECKOUT_SESSION_ID}',
+                'cancel_url' => route('billing.stripe.success'),
+                'metadata' => [
                     'plan' => $plan,
-                ]
+                ],
             ], []);
     })->name('billing');
-
 
     Route::get('dashboard', function () {
         return Inertia::render('dashboard');
@@ -82,16 +81,16 @@ Route::middleware(['auth', 'verified', 'throttle:keera-api'])->group(function ()
 
     Route::get('chats/{id}', function (int $id) {
         $parsers = ParserQuery::getParserList();
-        $chat    = Chat::query()->findOrFail($id);
+        $chat = Chat::query()->findOrFail($id);
 
         return Inertia::render('chat/index', [
-            'chat'    => $chat,
+            'chat' => $chat,
             'parsers' => $parsers,
         ]);
     })->name('chats.show');
 
     Route::post('chats', function (ChatRequest $request, ChatInitiateAction $action) {
-        $user         = auth()->user();
+        $user = auth()->user();
         $chatStoreDto = ChatStoreDto::from($request);
 
         $chat = $action
@@ -116,7 +115,7 @@ Route::middleware(['auth', 'verified', 'throttle:keera-api'])->group(function ()
 
         return Inertia::render('histories/index', [
             'histories' => $histories,
-            'params'    => request()->all(),
+            'params' => request()->all(),
         ]);
     })->name('histories.index');
 
@@ -159,19 +158,19 @@ Route::middleware(['auth', 'verified', 'throttle:keera-api'])->group(function ()
             ->firstOrFail();
 
         [$key, $json] = $schema->toArraySchema();
-        $schemaId = (new JsonParser())->jsonToSchema($key, $json);
+        $schemaId = (new JsonParser)->jsonToSchema($key, $json);
 
         /** @var Parser $replicateParser */
-        $replicateParser             = $parser->replicate();
+        $replicateParser = $parser->replicate();
         $replicateParser->created_at = now();
-        $replicateParser->user_id    = auth()->id();
-        $replicateParser->schema_id  = $schemaId;
+        $replicateParser->user_id = auth()->id();
+        $replicateParser->schema_id = $schemaId;
         $replicateParser->save();
 
         return redirect()->to(route('parsers.edit', $replicateParser->id));
     });
 
-    Route::put('parsers/{id}', function (Request $request,int $id) {
+    Route::put('parsers/{id}', function (Request $request, int $id) {
         $parser = Parser::query()
             ->with('schema')
             ->where('id', $id)
@@ -189,13 +188,13 @@ Route::middleware(['auth', 'verified', 'throttle:keera-api'])->group(function ()
             ->firstOrFail();
 
         $schema = $parser->schema->toArraySchema();
-        $json   = $parser->schema->toJsonSchema();
+        $json = $parser->schema->toJsonSchema();
 
         return Inertia::render('parsers/edit', [
             'parser' => $parser,
-            'json'   => $json,
+            'json' => $json,
             'schema' => [
-                'title'      => $schema[0],
+                'title' => $schema[0],
                 'properties' => [],
                 ...$schema[1],
             ],
@@ -219,7 +218,7 @@ Route::middleware(['auth', 'verified', 'throttle:keera-api'])->group(function ()
 
         return Inertia::render('parsers/index', [
             'parsers' => $results,
-            'params'  => $request->all()
+            'params' => $request->all(),
         ]);
     });
 

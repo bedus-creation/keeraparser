@@ -15,17 +15,17 @@ class ParserParseRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'files'    => [
+            'files' => [
                 'required',
                 'array',
             ],
-            'files.*'  => [
+            'files.*' => [
                 Rule::file()
                     ->max(10240)
-                    ->types('pdf,docx')
+                    ->types('pdf,docx'),
             ],
-            'params'   => ['array'],
-            'params.*' => 'required'
+            'params' => ['array'],
+            'params.*' => 'required',
         ];
     }
 }

@@ -28,11 +28,8 @@ class ParserParseController extends Controller
      *
      *  Once setup is complete, you're ready to hit this endpoint.
      *
-     * @param ParserParseRequest $request
-     * @param ChatInitiateAction $action
-     * @param int                $id The Parser's id that you have configured. [PDF parsers](https://keeraparser.com/parsers)
+     * @param  int  $id  The Parser's id that you have configured. [PDF parsers](https://keeraparser.com/parsers)
      *
-     * @return JsonResponse
      * @throws FileDoesNotExist
      * @throws FileIsTooBig
      */
@@ -53,36 +50,36 @@ class ParserParseController extends Controller
         return response()->json([
             /**
              * @var int
-             * Unique identifiers to track your parsing request
+             *          Unique identifiers to track your parsing request
              */
-            'id'                      => $chat->id,
+            'id' => $chat->id,
 
             /**
              * @var string
-             * [Parser](https://keeraparser.com/parsers) name that you have given.
+             *             [Parser](https://keeraparser.com/parsers) name that you have given.
              */
-            'parser_name'             => $chat->parser->name,
+            'parser_name' => $chat->parser->name,
 
             /**
              * @var ChatStatus
              */
-            'status'                  => $chat->status,
+            'status' => $chat->status,
 
             /**
              * @var Carbon
-             * The Parsing started date in YYYY-MM-DD H:i:s format
+             *             The Parsing started date in YYYY-MM-DD H:i:s format
              */
-            'created_at'              => $chat->created_at?->format('Y-m-d H:i:s'),
+            'created_at' => $chat->created_at?->format('Y-m-d H:i:s'),
 
             /**
              * @var Carbon
-             * The Parsing completed timestamp in YYYY-MM-DD H:i:s format
+             *             The Parsing completed timestamp in YYYY-MM-DD H:i:s format
              */
-            'completed_at'            => $chat->response_completed_at?->format('Y-m-d H:i:s'),
+            'completed_at' => $chat->response_completed_at?->format('Y-m-d H:i:s'),
 
             /**
              * @var array
-             * The structured json response as defined in Parser.
+             *            The structured json response as defined in Parser.
              */
             'structure_json_response' => $chat->response,
         ]);

@@ -2,7 +2,4 @@
 
 namespace App\Queries;
 
-class ChatQuery
-{
-
-}
+class ChatQuery {}

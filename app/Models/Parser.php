@@ -16,9 +16,9 @@ class Parser extends Model
 
     protected $table = 'parsers';
 
-    protected $fillable= [
+    protected $fillable = [
         'name',
-        'system_prompt'
+        'system_prompt',
     ];
 
     public function schema(): BelongsTo

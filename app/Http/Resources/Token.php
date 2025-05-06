@@ -20,12 +20,12 @@ class Token extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id'           => $this->id,
-            'name'         => $this->name,
-            'created_at'   => $this->created_at->format('Y-m-d'),
-            'token'        => Str::of($this->getKey().'|...'),
+            'id' => $this->id,
+            'name' => $this->name,
+            'created_at' => $this->created_at->format('Y-m-d'),
+            'token' => Str::of($this->getKey().'|...'),
             'last_used_at' => $this->last_used_at?->format('Y-m-d'),
-            'expires_at'   => $this->expires_at?->format('Y-m-d'),
+            'expires_at' => $this->expires_at?->format('Y-m-d'),
         ];
     }
 }

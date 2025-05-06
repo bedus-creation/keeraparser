@@ -29,28 +29,26 @@ class ChatInitiateAction
 
     public function prepare(User $user, ChatStoreDto $request): static
     {
-        $this->user    = $user;
+        $this->user = $user;
         $this->request = $request;
 
         return $this;
     }
 
-
     /**
-     * @return Chat
      * @throws FileDoesNotExist
      * @throws FileIsTooBig
      */
     public function execute(): Chat
     {
         $lockKey = "monthly_limit_user_{$this->user->id}";
-        $lock    = Cache::lock($lockKey, 3);
+        $lock = Cache::lock($lockKey, 3);
 
         try {
             $lock->block(5);
 
             $startOfMonth = now()->startOfMonth();
-            $endOfMonth   = now()->endOfMonth();
+            $endOfMonth = now()->endOfMonth();
 
             $requestCount = Chat::query()
                 ->where('user_id', $this->user->id)
@@ -59,13 +57,13 @@ class ChatInitiateAction
                 ->count();
 
             if ($requestCount >= $this->user->getSubscriptionPlan()->getQuotaPerMonth()) {
-                throw new ThrottleRequestsException("Monthly quota exceeded, Please upgrade your plan.");
+                throw new ThrottleRequestsException('Monthly quota exceeded, Please upgrade your plan.');
             }
 
             /** @var Chat $chat */
             $chat = Chat::query()->create([
-                'user_id'     => $this->user->id,
-                'parser_id'   => $this->request->parserId,
+                'user_id' => $this->user->id,
+                'parser_id' => $this->request->parserId,
             ]);
 
             $files = $this->request->files ?? [];
@@ -74,7 +72,7 @@ class ChatInitiateAction
                 $chat->addMedia($file)->toMediaCollection();
             }
         } catch (LockTimeoutException $e) {
-            throw new ThrottleRequestsException("Too many concurrent requests, please try again later.");
+            throw new ThrottleRequestsException('Too many concurrent requests, please try again later.');
         } finally {
             $lock->release();
         }

@@ -2,13 +2,13 @@
 
 namespace App\Queries;
 
+use App\Data\ParserInfoDto;
 use App\Models\Parser;
 use Illuminate\Database\Eloquent\Builder;
-use App\Data\ParserInfoDto;
 
 class ParserQuery
 {
-    public static function getParserList(string|null $search = null): array
+    public static function getParserList(?string $search = null): array
     {
         return ParserInfoDto::collect(
             items: Parser::query()

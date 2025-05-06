@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 /**
  * @property-read  int     $id
  * @property-read int      $schema_id
- * @property-read  boolean $required
+ * @property-read  bool $required
  */
 class Schema extends Model
 {
@@ -25,25 +25,25 @@ class Schema extends Model
         'type',
         'required',
         'enum',
-        'items'
+        'items',
     ];
 
     public function casts(): array
     {
         return [
             'required' => 'boolean',
-            'enum'     => 'array',
-            'items'    => 'array'
+            'enum' => 'array',
+            'items' => 'array',
         ];
     }
 
     public function toArraySchema(): array
     {
-        return (new JsonParser())->toJson($this, '');
+        return (new JsonParser)->toJson($this, '');
     }
 
     public function toJsonSchema()
     {
-        return (new JsonParser())->toJsonSchema($this);
+        return (new JsonParser)->toJsonSchema($this);
     }
 }

@@ -41,20 +41,20 @@ class ChatProcessAction
         $messages = [new UserMessage($parser->user_prompt, $attachments)];
 
         $payload = [
-            'schema'        => $schema->toArray(),
+            'schema' => $schema->toArray(),
             'system_prompt' => $parser->system_prompt,
-            'user_prompt'   => $parser->user_prompt,
-            'attachments'   => $attachments
+            'user_prompt' => $parser->user_prompt,
+            'attachments' => $attachments,
         ];
 
         $chat->update([
-            'payload' => $payload
+            'payload' => $payload,
         ]);
 
         $result = Prism::structured()
             ->using(Provider::Gemini, 'gemini-2.5-flash-preview-04-17')
             ->withClientOptions([
-                'timeout' => 200
+                'timeout' => 200,
             ])
             ->usingTemperature(0)
             ->withSchema($schema)
@@ -64,9 +64,9 @@ class ChatProcessAction
             ->structured;
 
         $chat->update([
-            'status'                => ChatStatus::COMPLETED,
+            'status' => ChatStatus::COMPLETED,
             'response_completed_at' => now(),
-            'response'              => $result,
+            'response' => $result,
         ]);
     }
 }

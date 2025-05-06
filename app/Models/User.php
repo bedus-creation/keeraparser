@@ -16,11 +16,12 @@ use Laravel\Sanctum\HasApiTokens;
  */
 class User extends Authenticatable implements MustVerifyEmail
 {
+    use Billable;
+
+    use HasApiTokens;
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory;
     use Notifiable;
-    use Billable;
-    use HasApiTokens;
 
     /**
      * The attributes that are mass assignable.
@@ -31,7 +32,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'name',
         'email',
         'password',
-        'trial_ends_at'
+        'trial_ends_at',
     ];
 
     /**
@@ -53,8 +54,8 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return [
             'email_verified_at' => 'datetime',
-            'trial_ends_at'     => 'datetime',
-            'password'          => 'hashed',
+            'trial_ends_at' => 'datetime',
+            'password' => 'hashed',
         ];
     }
 

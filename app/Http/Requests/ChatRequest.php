@@ -23,7 +23,7 @@ class ChatRequest extends FormRequest
     {
         return [
             'parser_id' => 'required|string',
-            'files'     => 'required|array',
+            'files' => 'required|array',
         ];
     }
 }
