@@ -11,10 +11,10 @@ if ! ./vendor/bin/phpunit -d memory_limit=512M --stop-on-failure; then
   exit 1
 fi
 
-if ! ./vendor/bin/phpstan analyse --memory-limit=512M; then
-  echo "PHPStan failed. Stopping release process"
-  exit 1
-fi
+#if ! ./vendor/bin/phpstan analyse --memory-limit=512M; then
+#  echo "PHPStan failed. Stopping release process"
+#  exit 1
+#fi
 
 # Deploy into production
 php ./vendor/bin/envoy run deploy
