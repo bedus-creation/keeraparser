@@ -29,6 +29,7 @@ symlinks
 laravel
 old-releases
 nginx
+cleanup
 @endstory
 
 @task('clone_repository',['on' => 'prod'])
@@ -59,10 +60,6 @@ echo 'Linking current release'
 ln -nfs {{ $newReleaseDir }} {{ $base }}/current
 @endtask
 
-@task('old-releases', ['on' => 'prod'])
-cd {{ $releaseDir }} && ls . | grep -v "{{$release}}" | xargs rm -r
-@endtask
-
 @task('deflate-assets', ['on' => 'prod'])
 echo "Unzipping on remote server..."
 unzip -o {{$newReleaseDir}}/public/build.zip -d {{$newReleaseDir}}/public/
@@ -79,7 +76,7 @@ php8.3 artisan vendor:publish --tag=laravel-assets --ansi --force
 @task('laravel',  ['on' => 'prod'])
 cd {{ $newReleaseDir }}
 php8.3 artisan storage:link
-php8.3 artisan optimize
+{{--php8.3 artisan optimize--}}
 {{--php8.3 artisan view:clear--}}
 {{--php8.3 artisan config:cache--}}
 {{--php8.3 artisan queue:restart--}}
@@ -89,6 +86,10 @@ php8.3 artisan optimize
 sudo cp {{ $newReleaseDir }}/bin/nginx.conf /etc/nginx/sites-available/{{$prod['domain']}}
 sudo nginx -t
 sudo service nginx reload
+@endtask
+
+@task('old-releases', ['on' => 'prod'])
+cd {{ $releaseDir }} && ls . | grep -v "{{$release}}" | xargs rm -r
 @endtask
 
 @task('cleanup', ['on' => 'local'])
