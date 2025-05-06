@@ -65,7 +65,7 @@ ln -nfs {{ $newReleaseDir }} {{ $base }}/current
 
 @task('deflate-assets', ['on' => 'prod'])
 echo "Unzipping on remote server..."
-unzip -o {{$newReleaseDir}}/public/build.zip -d {{$newReleaseDir}}/public/
+unzip -o {{$newReleaseDir}}/public/build.zip -d {{$newReleaseDir}}/
 rm {{$newReleaseDir}}/public/build.zip
 @endtask
 
