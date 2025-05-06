@@ -53,6 +53,9 @@ echo "Linking storage directory"
 rm -rf {{ $newReleaseDir }}/storage
 ln -nfs {{ $base }}/storage {{ $newReleaseDir }}/storage
 
+echo 'Linking Database'
+ln -s "{{ $base }}/database/database.sqlite" "{{ $newReleaseDir }}/database/database.sqlite"
+
 echo 'Linking .env file'
 ln -nfs {{ $base }}/.env {{ $newReleaseDir }}/.env
 
