@@ -45,7 +45,7 @@ class HandleInertiaRequests extends Middleware
                 'user' => $user,
                 'plan' => [
                     'on_trial' => $user?->onTrial(),
-                    'name'     => $user->getSubscriptionPlan()
+                    'name'     => $user?->getSubscriptionPlan()
                 ]
             ],
             'ziggy' => fn(): array => [
