@@ -6,7 +6,7 @@ yarn build:ssr
 git diff --quiet && git diff --staged --quiet || git commit -am 'Pint styles fix'
 
 php artisan migrate:fresh --env=testing
-if ! ./vendor/bin/phpunit -d memory_limit=512M --stop-on-failure; then
+if ! ./vendor/bin/pest -d memory_limit=512M --stop-on-failure; then
   echo "PHPUnit tests failed. Stopping release process."
   exit 1
 fi
