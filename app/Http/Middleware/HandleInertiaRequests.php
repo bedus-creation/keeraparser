@@ -40,16 +40,16 @@ class HandleInertiaRequests extends Middleware
 
         return [
             ...parent::share($request),
-            'name' => config('app.name'),
-            'auth' => [
+            'name'  => config('app.name'),
+            'auth'  => [
                 'user' => $user,
                 'plan' => [
                     'on_trial' => $user?->onTrial(),
-                    'name' => $user?->getSubscriptionPlan(),
+                    'name'     => $user?->getSubscriptionPlan(),
                 ],
             ],
-            'ziggy' => fn (): array => [
-                ...(new Ziggy)->toArray(),
+            'ziggy' => fn(): array => [
+                ...(new Ziggy(null, url('/')))->toArray(),
                 'location' => $request->url(),
             ],
         ];
