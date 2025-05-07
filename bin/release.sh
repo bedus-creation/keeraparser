@@ -1,3 +1,9 @@
+current_branch=$(git symbolic-ref --short HEAD)
+if [ "$current_branch" != "main" ]; then
+  echo "Aborting release: Not on 'main' branch. Current branch is '$current_branch'."
+  exit 1
+fi
+
 yarn install --pure-lockfile
 yarn build:ssr
 
@@ -18,3 +24,6 @@ fi
 
 # Deploy into production
 php ./vendor/bin/envoy run deploy
+
+git commit -m "Release: Deploy new version $(date +'%Y-%m-%d %H:%M:%S')"
+git push origin main
