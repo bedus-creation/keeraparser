@@ -96,7 +96,7 @@ cd {{ $releaseDir }} && ls . | grep -v "{{$release}}" | xargs rm -r
 @endtask
 
 @task('cleanup', ['on' => 'local'])
-rm -rf build.zip
+rm -rf public/build.zip
 @endtask
 
 
