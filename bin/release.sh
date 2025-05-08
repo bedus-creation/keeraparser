@@ -1,3 +1,11 @@
+#!/bin/bash
+
+# Check if .env.production exists
+if [ ! -f .env.production ]; then
+  echo "Error: .env.production file is missing."
+  exit 1
+fi
+
 current_branch=$(git symbolic-ref --short HEAD)
 if [ "$current_branch" != "main" ]; then
   echo "Aborting release: Not on 'main' branch. Current branch is '$current_branch'."

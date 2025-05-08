@@ -46,6 +46,9 @@ zip -r public/build.zip public/build
 
 echo "Uploading ZIP to remote server..."
 scp -r ./public/build.zip {{$prod['user']}}:{{$newReleaseDir}}/public/build.zip
+
+echo "Copy Environment files to Production"
+scp -r .env.production {{$prod['user']}}:{{$newReleaseDir}}/.env
 @endtask
 
 @task('symlinks', ['on' => 'prod'])
@@ -55,9 +58,6 @@ ln -nfs {{ $base }}/storage {{ $newReleaseDir }}/storage
 
 echo 'Linking Database'
 ln -s "{{ $base }}/database/database.sqlite" "{{ $newReleaseDir }}/database/database.sqlite"
-
-echo 'Linking .env file'
-ln -nfs {{ $base }}/.env {{ $newReleaseDir }}/.env
 
 echo 'Linking current release'
 ln -nfs {{ $newReleaseDir }} {{ $base }}/current
