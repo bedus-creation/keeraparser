@@ -71,7 +71,7 @@ ln -nfs {{ $newReleaseDir }} {{ $base }}/current
 
 echo "Move the workers for supervisors"
 sudo mv {{$newReleaseDir}}/bin/keeraparser-ssr-worker.conf /etc/supervisor/conf.d/keeraparser-ssr-worker.conf
-sudo mv {{$newReleaseDir}}/bin/keeraparser-worker.conf /etc/supervisor/conf.d/keeraparser-worker.conf
+sudo mv {{$newReleaseDir}}/bin/keeraparser-horizon.conf /etc/supervisor/conf.d/keeraparser-horizon.conf
 @endtask
 
 @task('deflate-assets', ['on' => 'prod'])
@@ -100,9 +100,9 @@ php8.3 artisan storage:link
 php8.3 artisan horizon:terminate
 sudo supervisorctl reread
 sudo supervisorctl update
-sudo supervisorctl stop "keeraparser-worker:*"
+sudo supervisorctl stop "keeraparser-horizon:*"
 sudo supervisorctl stop "keeraparser-ssr-worker:*"
-sudo supervisorctl start "keeraparser-worker:*"
+sudo supervisorctl start "keeraparser-horizon:*"
 sudo supervisorctl start "keeraparser-ssr-worker:*"
 @endtask
 
