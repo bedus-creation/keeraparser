@@ -331,7 +331,7 @@ export default function Index() {
                             <AppLogo/>
                         </div>
                         <p className="text-muted-foreground text-center text-sm leading-loose md:text-left">
-                            &copy; {new Date().getFullYear()} ResumeAI. All rights reserved.
+                            &copy; {new Date().getFullYear()} Keera Parser. All rights reserved.
                         </p>
                         <div className="flex gap-4">
                             {/*TODO: add terms and Privacy */}

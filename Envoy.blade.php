@@ -29,7 +29,6 @@ symlinks
 laravel
 old-releases
 nginx
-cleanup
 @endstory
 
 @task('clone_repository',['on' => 'prod'])
@@ -41,14 +40,26 @@ git reset --hard {{ $commit }}
 @endtask
 
 @task('upload-assets', ['on' => 'local'])
+echo "Zipping SSR folder..."
+zip -r bootstrap/ssr.zip bootstrap/ssr
+
+echo "Uploading SSR ZIP to remote server..."
+scp -r bootstrap/ssr.zip {{$prod['user']}}:{{$newReleaseDir}}/bootstrap/ssr.zip
+rm -rf bootstrap/ssr.zip
+
 echo "Zipping build folder..."
 zip -r public/build.zip public/build
 
-echo "Uploading ZIP to remote server..."
+echo "Uploading Build ZIP to remote server..."
 scp -r ./public/build.zip {{$prod['user']}}:{{$newReleaseDir}}/public/build.zip
+rm -rf ./public/build.zip
 
 echo "Copy Environment files to Production"
 scp -r .env.production {{$prod['user']}}:{{$newReleaseDir}}/.env
+
+echo "Copy Workers to Production"
+scp -r bin/keeraparser-worker.conf {{$prod['user']}}:/etc/supervisor/conf.d/keeraparser-worker.conf
+scp -r bin/keeraparser-ssr-worker.conf {{$prod['user']}}:/etc/supervisor/conf.d/keeraparser-ssr-worker.conf
 @endtask
 
 @task('symlinks', ['on' => 'prod'])
@@ -66,7 +77,10 @@ ln -nfs {{ $newReleaseDir }} {{ $base }}/current
 @task('deflate-assets', ['on' => 'prod'])
 echo "Unzipping on remote server..."
 unzip -o {{$newReleaseDir}}/public/build.zip -d {{$newReleaseDir}}/
+unzip -o {{$newReleaseDir}}/bootstrap/ssr.zip -d {{$newReleaseDir}}/
+
 rm {{$newReleaseDir}}/public/build.zip
+rm {{$newReleaseDir}}/bootstrap/ssr.zip
 @endtask
 
 @task('composer', ['on' => 'prod'])
@@ -82,7 +96,14 @@ php8.3 artisan storage:link
 {{--php8.3 artisan optimize--}}
 {{--php8.3 artisan view:clear--}}
 {{--php8.3 artisan config:cache--}}
-{{--php8.3 artisan queue:restart--}}
+
+php8.3 artisan horizon:terminate
+sudo supervisorctl reread
+sudo supervisorctl update
+sudo supervisorctl stop "keeraparser-worker:*"
+sudo supervisorctl stop "keeraparser-ssr-worker:*"
+sudo supervisorctl start "keeraparser-worker:*"
+sudo supervisorctl start "keeraparser-ssr-worker:*"
 @endtask
 
 @task('nginx', ['on' => 'prod'])
@@ -93,10 +114,6 @@ sudo service nginx reload
 
 @task('old-releases', ['on' => 'prod'])
 cd {{ $releaseDir }} && ls . | grep -v "{{$release}}" | xargs rm -r
-@endtask
-
-@task('cleanup', ['on' => 'local'])
-rm -rf public/build.zip
 @endtask
 
 
