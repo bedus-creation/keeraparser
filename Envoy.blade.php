@@ -56,10 +56,6 @@ rm -rf ./public/build.zip
 
 echo "Copy Environment files to Production"
 scp -r .env.production {{$prod['user']}}:{{$newReleaseDir}}/.env
-
-echo "Copy Workers to Production"
-scp -r bin/keeraparser-worker.conf {{$prod['user']}}:/etc/supervisor/conf.d/keeraparser-worker.conf
-scp -r bin/keeraparser-ssr-worker.conf {{$prod['user']}}:/etc/supervisor/conf.d/keeraparser-ssr-worker.conf
 @endtask
 
 @task('symlinks', ['on' => 'prod'])
@@ -72,6 +68,10 @@ ln -s "{{ $base }}/database/database.sqlite" "{{ $newReleaseDir }}/database/data
 
 echo 'Linking current release'
 ln -nfs {{ $newReleaseDir }} {{ $base }}/current
+
+echo "Move the workers for supervisors"
+sudo mv {{$newReleaseDir}}/keeraparser-ssr-worker.conf /etc/supervisor/conf.d/keeraparser-ssr-worker.conf
+sudo mv {{$newReleaseDir}}/keeraparser-worker.conf /etc/supervisor/conf.d/keeraparser-worker.conf
 @endtask
 
 @task('deflate-assets', ['on' => 'prod'])
