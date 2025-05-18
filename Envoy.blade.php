@@ -70,8 +70,8 @@ echo 'Linking current release'
 ln -nfs {{ $newReleaseDir }} {{ $base }}/current
 
 echo "Move the workers for supervisors"
-sudo mv {{$newReleaseDir}}/keeraparser-ssr-worker.conf /etc/supervisor/conf.d/keeraparser-ssr-worker.conf
-sudo mv {{$newReleaseDir}}/keeraparser-worker.conf /etc/supervisor/conf.d/keeraparser-worker.conf
+sudo mv {{$newReleaseDir}}/bin/keeraparser-ssr-worker.conf /etc/supervisor/conf.d/keeraparser-ssr-worker.conf
+sudo mv {{$newReleaseDir}}/bin/keeraparser-worker.conf /etc/supervisor/conf.d/keeraparser-worker.conf
 @endtask
 
 @task('deflate-assets', ['on' => 'prod'])
